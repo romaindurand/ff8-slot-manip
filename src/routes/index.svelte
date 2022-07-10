@@ -1,3 +1,7 @@
+<script context="module">
+  export const prerender = true;
+</script>
+
 <script>
   import AutoComplete from 'simple-svelte-autocomplete';
   import RNGMap from '../data/RNGMap.json';
