@@ -173,9 +173,11 @@
 </script>
 
 <h1>Welcome To the Slot Manipulation</h1>
-<p>
-  Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End
-</p>
+<ul class="w-full max-w-lg">
+  <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
+  <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>
+  <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li>
+</ul>
 
 <button class="btn toggle-lang" on:click={toggleLang}>{lang}</button>
 
@@ -241,8 +243,6 @@
 </pre>
 {/if}
 
-
-
 {#if filteredComputedTable.length === 1}
   <div>
     <label
@@ -251,14 +251,8 @@
       Show manipulation
     </label>
   </div>
-  <!-- <h2>Manip</h2>
-  <p>
-    {manip}
-  </p> -->
 {/if}
 
-
-<!-- Put this part before </body> tag -->
 <input type="checkbox" id="modal-manip" class="modal-toggle" bind:this={showManipCheckbox}/>
 <label for="modal-manip" class="modal cursor-pointer">
   <label class="modal-box relative" for="">
@@ -267,12 +261,8 @@
   </label>
 </label>
 
-
-
-
 <style>
-  h1,
-  h2 {
+  h1 {
     font: revert;
   }
 
@@ -290,5 +280,9 @@
     padding: 1rem;
     background-color: #555;
     color: white;
+  }
+
+  ul {
+    list-style-type: disc;
   }
 </style>
