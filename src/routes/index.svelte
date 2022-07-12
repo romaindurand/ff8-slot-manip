@@ -52,7 +52,7 @@
       spell_name1: spellName1,
       spell_name2: spellName2,
       spell_name3: spellName3,
-      black_dot: row.table === 4 && row.current_crisis_level === 4,
+      the_end_table: row.table === 4 && row.current_crisis_level === 4,
     };
   });
 
@@ -140,7 +140,7 @@
     }
 
     const blackDots = computedTable
-      .filter((row) => row.black_dot)
+      .filter((row) => row.the_end_table)
       .map((row) => row.rng);
 
     const closestBlackDot =
@@ -196,6 +196,7 @@
     </label>
     <input
       id="hp"
+      min="1"
       type="number"
       placeholder="Current Selphie's HP"
       class="input input-primary input-bordered w-full max-w-xs"
@@ -326,5 +327,9 @@
 
   .main-content {
     margin: auto;
+  }
+
+  li button {
+    color: white;
   }
 </style>
