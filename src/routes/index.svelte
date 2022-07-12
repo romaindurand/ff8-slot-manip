@@ -9,6 +9,8 @@
   import spellTableFR from "../data/table.json";
   import spellTableEN from "../data/tableEN.json";
 
+  console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
+
   let selectedSpell1, selectedSpell2, selectedSpell3;
   let deadCharacters = 0;
   let maxHp = 482;
@@ -139,13 +141,11 @@
     const blackDots = computedTable
       .filter((row) => row.black_dot)
       .map((row) => row.rng);
-    console.log({ blackDots });
 
     const closestBlackDot =
       blackDots.find((blackDot) => {
         return blackDot >= rng;
       }) || blackDots[0];
-    console.log({ closestBlackDot });
 
     if (table === 4) {
       const doOver1 = (closestBlackDot - 4 - currentRng) / 4;
@@ -171,102 +171,116 @@
     resetSpells();
   }
 </script>
-
-<h1>Welcome To the Slot Manipulation</h1>
-<ul class="w-full max-w-lg">
-  <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
-  <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>
-  <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li>
-</ul>
-
-<button class="btn toggle-lang" on:click={toggleLang}>{lang}</button>
-
-<div class="form-control w-full max-w-xs">
-  <label class="label" for="hp">
-    <span class="label-text">Current Selphie's HP</span>
+<div class="main-content max-w-lg">
+  <h1>Slot Manipulation</h1>
+  <ul class="w-full max-w-lg">
+    <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
+    <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>
+    <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li>
+  </ul>
+  
+  <button class="btn toggle-lang" on:click={toggleLang}>{lang}</button>
+  
+  <div class="form-control w-full max-w-xs">
+    <label class="label" for="hp">
+      <span class="label-text">Current Selphie's HP</span>
+    </label>
+    <input
+      id="hp"
+      type="number"
+      placeholder="Current Selphie's HP"
+      class="input input-primary input-bordered w-full max-w-xs"
+      bind:value={currentHp}
+    />
+    <AutoComplete
+      placeholder="1st Spell"
+      inputClassName="input input-primary input-bordered w-full max-w-xs"
+      items={autocompleteSpells1}
+      bind:selectedItem={selectedSpell1}
+    />
+    {#if selectedSpell1}
+      <AutoComplete
+        placeholder="2nd Spell"
+        inputClassName="input input-primary input-bordered w-full max-w-xs"
+        items={autocompleteSpells2}
+        bind:selectedItem={selectedSpell2}
+      />
+    {/if}
+    {#if selectedSpell2}
+      <AutoComplete
+        placeholder="3rd Spell"
+        inputClassName="input input-primary input-bordered w-full max-w-xs"
+        items={autocompleteSpells3}
+        bind:selectedItem={selectedSpell3}
+      />
+    {/if}
+    {#if spellOrder}
+      <button
+        class="btn btn-error"
+        on:click={resetSpells}
+        transition:fly="{{ x: -200, duration: 300 }}"
+      >
+        reset spells
+      </button>
+    {/if}
+  </div>
+  
+  {#if filteredComputedTable.length > 0}
+  <button
+    transition:fly="{{ x: -200, duration: 300 }}"
+    class="btn btn-info btn-small"
+    on:click={() => {
+      showRawData = !showRawData;
+    }}
+  >
+    {showRawData ? 'Hide' : 'Show'} raw data
+  </button>
+  {/if}
+  
+  {#if showRawData && filteredComputedTable.length > 0}
+  <pre
+    class="raw-data max-w-sm"
+    transition:slide
+  >{JSON.stringify(filteredComputedTable, null, 2)}</pre>
+  {/if}
+  
+  {#if filteredComputedTable.length === 1}
+    <div>
+      <label
+        for="modal-manip"
+        class="btn btn-success modal-button">
+        Show manipulation
+      </label>
+    </div>
+  {/if}
+  
+  <input type="checkbox" id="modal-manip" class="modal-toggle" bind:this={showManipCheckbox}/>
+  <label for="modal-manip" class="modal cursor-pointer">
+    <label class="modal-box relative" for="">
+      <h3 class="text-lg font-bold">Manipulation</h3>
+      <pre class="py-4">{manip}</pre>
+    </label>
   </label>
-  <input
-    id="hp"
-    type="number"
-    placeholder="Current Selphie's HP"
-    class="input input-primary input-bordered w-full max-w-xs"
-    bind:value={currentHp}
-  />
-  <AutoComplete
-    placeholder="1st Spell"
-    inputClassName="input input-primary input-bordered w-full max-w-xs"
-    items={autocompleteSpells1}
-    bind:selectedItem={selectedSpell1}
-  />
-  {#if selectedSpell1}
-    <AutoComplete
-      placeholder="2nd Spell"
-      inputClassName="input input-primary input-bordered w-full max-w-xs"
-      items={autocompleteSpells2}
-      bind:selectedItem={selectedSpell2}
-    />
-  {/if}
-  {#if selectedSpell2}
-    <AutoComplete
-      placeholder="3rd Spell"
-      inputClassName="input input-primary input-bordered w-full max-w-xs"
-      items={autocompleteSpells3}
-      bind:selectedItem={selectedSpell3}
-    />
-  {/if}
-  {#if spellOrder}
-    <button
-      class="btn btn-error"
-      on:click={resetSpells}
-      transition:fly="{{ x: -200, duration: 300 }}"
-    >
-      reset spells
-    </button>
-  {/if}
 </div>
 
-{#if filteredComputedTable.length > 0}
-<button
-  transition:fly="{{ x: -200, duration: 300 }}"
-  class="btn btn-info btn-small"
-  on:click={() => {
-    showRawData = !showRawData;
-  }}
->
-  {showRawData ? 'Hide' : 'Show'} raw data
-</button>
-{/if}
-
-{#if showRawData && filteredComputedTable.length > 0}
-<pre class="raw-data max-w-sm" transition:slide>
-{JSON.stringify(filteredComputedTable, null, 2)}
-</pre>
-{/if}
-
-{#if filteredComputedTable.length === 1}
-  <div>
-    <label
-      for="modal-manip"
-      class="btn btn-success modal-button">
-      Show manipulation
-    </label>
-  </div>
-{/if}
-
-<input type="checkbox" id="modal-manip" class="modal-toggle" bind:this={showManipCheckbox}/>
-<label for="modal-manip" class="modal cursor-pointer">
-  <label class="modal-box relative" for="">
-    <h3 class="text-lg font-bold">Manipulation</h3>
-    <pre class="py-4">{manip}</pre>
-  </label>
-</label>
+<a href="https://github.com/romaindurand/ff8-slot-manip">
+  <img
+    loading="lazy"
+    width="149"
+    height="149"
+    src="https://github.blog/wp-content/uploads/2008/12/forkme_left_darkblue_121621.png?resize=149%2C149"
+    class="github-corner"
+    alt="Fork me on GitHub"
+    data-recalc-dims="1">
+  </a>
 
 <style>
   h1 {
     font: revert;
+    margin-bottom: 1rem;
   }
 
-  .btn-error, :global(.autocomplete), p, input, .btn, pre {
+  .btn-error, :global(.autocomplete), input, .btn, pre, ul {
     margin-bottom: 1rem;
   }
 
@@ -284,5 +298,17 @@
 
   ul {
     list-style-type: disc;
+  }
+
+  .github-corner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    border: 0;
+    z-index: 2;
+  }
+
+  .main-content {
+    margin: auto;
   }
 </style>
