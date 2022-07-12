@@ -306,6 +306,13 @@
     left: 0;
     border: 0;
     z-index: 2;
+    transition: opacity 0.3s;
+  }
+
+  @media (max-width: 680px) {
+    .github-corner {
+      opacity: 0.2;
+    }
   }
 
   .main-content {
