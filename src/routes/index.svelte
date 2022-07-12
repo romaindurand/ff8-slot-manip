@@ -8,6 +8,7 @@
   import RNGMap from "../data/RNGMap.json";
   import spellTableFR from "../data/table.json";
   import spellTableEN from "../data/tableEN.json";
+  import spellTableJP from "../data/tableJP.json";
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
@@ -19,7 +20,7 @@
   let showManipCheckbox
 
   let lang = "FR";
-  $: spellTable = lang === "FR" ? spellTableFR : spellTableEN;
+  $: spellTable = lang === "FR" ? spellTableFR : lang === "EN" ? spellTableEN : spellTableJP;
 
   let manip;
 
@@ -166,8 +167,8 @@
     return `do-over \tx${doOver1} \nskip-turn \tx${skipTurn} \ndo-over \tx${doOver2}`;
   }
 
-  function toggleLang() {
-    lang = lang === "FR" ? "EN" : "FR";
+  function switchLang(targetLang) {
+    lang = targetLang;
     resetSpells();
   }
 </script>
@@ -179,7 +180,15 @@
     <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li>
   </ul>
   
-  <button class="btn toggle-lang" on:click={toggleLang}>{lang}</button>
+  <!-- <button class="btn toggle-lang" on:click={toggleLang}>{lang}</button> -->
+  <div class="dropdown dropdown-end toggle-lang">
+    <span tabindex="0" class="btn m-1">Spells language</span>
+    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-primary rounded-box w-52">
+      <li><button on:click={() => switchLang('FR')}>Français</button></li>
+      <li><button on:click={() => switchLang('EN')}>English</button></li>
+      <li><button on:click={() => switchLang('JP')}>Japanese</button></li>
+    </ul>
+  </div>
   
   <div class="form-control w-full max-w-xs">
     <label class="label" for="hp">
