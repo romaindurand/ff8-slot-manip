@@ -149,7 +149,8 @@
       }) || blackDots[0];
 
     if (table === 4) {
-      const doOver1 = (closestBlackDot - 4 - currentRng) / 4;
+      let doOver1 = (closestBlackDot - 4 - currentRng) / 4;
+      if (doOver1 < 0) doOver1 += 64;
       const skipTurn = 4;
       let delta = 183 - closestBlackDot;
       if (delta < 0) delta += 256;
