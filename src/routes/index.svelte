@@ -145,7 +145,7 @@
 
     const closestBlackDot =
       blackDots.find((blackDot) => {
-        return blackDot >= rng;
+        return blackDot >= currentRng;
       }) || blackDots[0];
 
     if (table === 4) {
