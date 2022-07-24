@@ -9,16 +9,29 @@
   import spellTableFR from "../data/table.json";
   import spellTableEN from "../data/tableEN.json";
   import spellTableJP from "../data/tableJP.json";
+  import Faq from '../components/FAQ.svelte';
+  import getManip from '../lib/manip.js'
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
   let selectedSpell1, selectedSpell2, selectedSpell3;
   let deadCharacters = 0;
-  let maxHp = 482;
-  let currentHp = maxHp;
+  let currentHp = 34;
   let showRawData = false;
+  let auraChecked = false;
   let showManipCheckbox
+  let category
+  let maxHp
 
+  $: {
+    maxHp = {
+      'Any%': 482,
+      '100%': 9576,
+      'NoJunction' : 3680,
+      'NoJunction/NoLevel' : 482
+    }[category];
+    currentHp = currentHp;
+  }
   let lang = "FR";
   $: spellTable = lang === "FR" ? spellTableFR : lang === "EN" ? spellTableEN : spellTableJP;
 
@@ -27,7 +40,7 @@
   $: computedTable = RNGMap.map((row) => {
     return {
       ...row,
-      current_crisis_level: computeCrisisLevel(row.random_mod, currentHp),
+      current_crisis_level: computeCrisisLevel(row.random_mod, currentHp, auraChecked, maxHp),
     };
   }).map((row) => {
     const spellName1 =
@@ -94,10 +107,14 @@
     })
     .sort();
 
-  function computeCrisisLevel(random_mod, currentHp) {
+  function computeCrisisLevel(random_mod, currentHp, auraChecked, maxHp) {
     const hpMod = Math.floor((2500 * currentHp) / maxHp);
     const deathBonus = deadCharacters * 200 + 1600;
-    const statusBonus = 0 * 10;
+    let statusSum = 0
+    if (auraChecked && category === '100%') {
+      statusSum += 200
+    }
+    const statusBonus = statusSum * 10;
     const limitLevel = Math.floor(
       (statusBonus + deathBonus - hpMod) / (random_mod + 160)
     );
@@ -121,51 +138,22 @@
   $: spellOrder = spellList.length;
   $: {
     if (filteredComputedTable.length === 1) {
-      manip = computeManip(filteredComputedTable[0], spellOrder);
+      const currentTable = filteredComputedTable[0].table
+      const currentCrisis = filteredComputedTable[0].current_crisis_level
+      const currentRNG = filteredComputedTable[0].rng
+      manip = getManip(
+        currentTable,
+        currentCrisis,
+        currentRNG,
+        category,
+        computedTable,
+        spellOrder,
+      )
+      // filteredComputedTable[0], spellOrder, computedTable, category);
       showManipCheckbox.checked = true
     } else {
       manip = null;
     }
-  }
-
-  function computeManip(
-    { random_mod, rng, table, entry, current_crisis_level },
-    spellOrder
-  ) {
-    const currentRng = (rng + spellOrder * 4) % 256;
-    if (table === 4 && current_crisis_level === 4) {
-      let delta = 183 - currentRng;
-      if (delta < 0) delta += 256;
-      return `do-over x${delta / 4}`;
-    }
-
-    const blackDots = computedTable
-      .filter((row) => row.the_end_table)
-      .map((row) => row.rng);
-
-    const closestBlackDot =
-      blackDots.find((blackDot) => {
-        return blackDot >= currentRng;
-      }) || blackDots[0];
-
-    if (table === 4) {
-      let doOver1 = (closestBlackDot - 4 - currentRng) / 4;
-      if (doOver1 < 0) doOver1 += 64;
-      const skipTurn = 4;
-      let delta = 183 - closestBlackDot;
-      if (delta < 0) delta += 256;
-      const doOver2 = delta / 4 - 1;
-      return `do-over \tx${doOver1} \nskip-turn \tx${skipTurn} \ndo-over \tx${doOver2}`;
-    }
-
-    let delta1 = closestBlackDot - currentRng;
-    if (delta1 < 0) delta1 += 256;
-    const doOver1 = delta1 <= 4 ? 0 : Math.floor(delta1 / 4);
-    const skipTurn = delta1 % 4;
-    let delta2 = 183 - closestBlackDot;
-    if (delta2 < 0) delta2 += 256;
-    const doOver2 = delta2 / 4 - 1;
-    return `do-over \tx${doOver1} \nskip-turn \tx${skipTurn} \ndo-over \tx${doOver2}`;
   }
 
   function switchLang(targetLang) {
@@ -175,11 +163,6 @@
 </script>
 <div class="main-content max-w-lg">
   <h1>Slot Manipulation</h1>
-  <ul class="w-full max-w-lg">
-    <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
-    <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>
-    <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li>
-  </ul>
   
   <!-- <button class="btn toggle-lang" on:click={toggleLang}>{lang}</button> -->
   <div class="dropdown dropdown-end toggle-lang">
@@ -192,6 +175,24 @@
   </div>
   
   <div class="form-control w-full max-w-xs">
+    <select bind:value={category} class="select select-primary w-full max-w-xs">
+      <option selected>Any%</option>
+      <option>100%</option>
+      <option>NoJunction</option>
+      <option>NoJunction/NoLevel</option>
+    </select>
+  <Faq category={category}/>
+
+  
+  {#if category === '100%'}  
+  <label transition:slide class="label cursor-pointer">
+      <span class="label-text">Aura status ?</span> 
+      <input type="checkbox" class="checkbox" bind:checked={auraChecked}/>
+    </label>
+    {/if}
+  
+    <p>MaxHP : {maxHp}</p>
+    <p>CurrentHp : {currentHp}</p>
     <label class="label" for="hp">
       <span class="label-text">Current Selphie's HP</span>
     </label>
@@ -291,8 +292,17 @@
     margin-bottom: 1rem;
   }
 
-  .btn-error, :global(.autocomplete), input, .btn, pre, ul {
+  .btn-error, :global(.autocomplete), input, .btn, pre, ul, select {
     margin-bottom: 1rem;
+  }
+
+  :global(.autocomplete) {
+    padding-left: 0;
+    padding-right: 0;
+
+  }
+  :global(.autocomplete) input {
+    height: 2.5rem;
   }
 
   .toggle-lang {
@@ -307,9 +317,7 @@
     color: white;
   }
 
-  ul {
-    list-style-type: disc;
-  }
+
 
   .github-corner {
     position: fixed;
