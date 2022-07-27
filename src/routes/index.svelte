@@ -149,6 +149,18 @@
     selectedSpell4 = "";
   }
 
+  function resetSpell(spellNumber) {
+    if (spellNumber === 1) {
+      selectedSpell1 = "";
+    } else if (spellNumber === 2) {
+      selectedSpell2 = "";
+    } else if (spellNumber === 3) {
+      selectedSpell3 = "";
+    } else if (spellNumber === 4) {
+      selectedSpell4 = "";
+    }
+  }
+
   $: spellList = [selectedSpell1, selectedSpell2, selectedSpell3].filter(
     (spell) => spell
   );
@@ -221,36 +233,51 @@
       class="input input-primary input-bordered w-full max-w-xs"
       bind:value={currentHp}
     />
-    <AutoComplete
-      placeholder="1st Spell"
+    <div class="grid-cols-4">
+
+      <AutoComplete
+        placeholder="1st Spell"
+        inputClassName="input input-primary input-bordered w-full max-w-xs"
+        items={autocompleteSpells1}
+        bind:selectedItem={selectedSpell1}
+      />
+      {#if selectedSpell1 && !selectedSpell2 && !selectedSpell3 && !selectedSpell4}
+        <button class="btn btn-outline btn-error" on:click={() => resetSpell(1)}>✕</button>
+      {/if}
+      {#if selectedSpell1}
+      <AutoComplete
+      placeholder="2nd Spell"
       inputClassName="input input-primary input-bordered w-full max-w-xs"
-      items={autocompleteSpells1}
-      bind:selectedItem={selectedSpell1}
-    />
-    {#if selectedSpell1}
-      <AutoComplete
-        placeholder="2nd Spell"
-        inputClassName="input input-primary input-bordered w-full max-w-xs"
-        items={autocompleteSpells2}
-        bind:selectedItem={selectedSpell2}
+      items={autocompleteSpells2}
+      bind:selectedItem={selectedSpell2}
       />
-    {/if}
-    {#if selectedSpell2}
-      <AutoComplete
-        placeholder="3rd Spell"
-        inputClassName="input input-primary input-bordered w-full max-w-xs"
-        items={autocompleteSpells3}
-        bind:selectedItem={selectedSpell3}
-      />
-    {/if}
-    {#if selectedSpell3}
-      <AutoComplete
-        placeholder="4th Spell"
-        inputClassName="input input-primary input-bordered w-full max-w-xs"
-        items={autocompleteSpells4}
-        bind:selectedItem={selectedSpell4}
-      />
-    {/if}
+      {/if}
+      {#if selectedSpell2 && !selectedSpell3 && !selectedSpell4}
+        <button class="btn btn-outline btn-error" on:click={() => resetSpell(2)}>✕</button>
+      {/if}
+      {#if selectedSpell2}
+        <AutoComplete
+          placeholder="3rd Spell"
+          inputClassName="input input-primary input-bordered w-full max-w-xs"
+          items={autocompleteSpells3}
+          bind:selectedItem={selectedSpell3}
+        />
+      {/if}
+      {#if selectedSpell3 && !selectedSpell4}
+        <button class="btn btn-outline btn-error"  on:click={() => resetSpell(3)}>✕</button>
+      {/if}
+      {#if selectedSpell3}
+        <AutoComplete
+          placeholder="4th Spell"
+          inputClassName="input input-primary input-bordered w-full max-w-xs"
+          items={autocompleteSpells4}
+          bind:selectedItem={selectedSpell4}
+        />
+      {/if}
+      {#if selectedSpell4}
+        <button class="btn btn-outline btn-error" on:click={() => resetSpell(4)}>✕</button>
+      {/if}
+    </div>
     {#if spellOrder}
       <button
         class="btn btn-error"
