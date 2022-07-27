@@ -301,7 +301,7 @@
     padding-right: 0;
 
   }
-  :global(.autocomplete) input {
+  :global(input.input.input-primary.autocomplete-input) {
     height: 2.5rem;
   }
 
