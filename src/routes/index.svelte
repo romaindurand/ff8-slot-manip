@@ -14,7 +14,7 @@
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
-  let selectedSpell1, selectedSpell2, selectedSpell3;
+  let selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4;
   let deadCharacters = 0;
   let currentHp = 34;
   let showRawData = false;
@@ -60,11 +60,16 @@
       spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
         rowEntryModulo + 1
       ];
+    const spellName4 =
+      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
+        rowEntryModulo + 2
+      ];
     return {
       ...row,
       spell_name1: spellName1,
       spell_name2: spellName2,
       spell_name3: spellName3,
+      spell_name4: spellName4,
       the_end_table: row.table === 4 && row.current_crisis_level === 4,
     };
   });
@@ -82,6 +87,10 @@
     .filter((row) => {
       if (!selectedSpell3) return true;
       return row.spell_name3 === selectedSpell3;
+    })
+    .filter((row) => {
+      if (!selectedSpell4) return true;
+      return row.spell_name4 === selectedSpell4;
     });
 
   
@@ -107,6 +116,13 @@
     })
     .sort();
 
+  $: autocompleteSpells4 = filteredComputedTable
+    .map((row) => row.spell_name4)
+    .filter((spell, index, spells) => {
+      return spells.indexOf(spell) === index;
+    })
+    .sort();  
+
   function computeCrisisLevel(random_mod, currentHp, auraChecked, maxHp) {
     const hpMod = Math.floor((2500 * currentHp) / maxHp);
     const deathBonus = deadCharacters * 200 + 1600;
@@ -130,6 +146,7 @@
     selectedSpell1 = "";
     selectedSpell2 = "";
     selectedSpell3 = "";
+    selectedSpell4 = "";
   }
 
   $: spellList = [selectedSpell1, selectedSpell2, selectedSpell3].filter(
@@ -224,6 +241,14 @@
         inputClassName="input input-primary input-bordered w-full max-w-xs"
         items={autocompleteSpells3}
         bind:selectedItem={selectedSpell3}
+      />
+    {/if}
+    {#if selectedSpell3}
+      <AutoComplete
+        placeholder="4th Spell"
+        inputClassName="input input-primary input-bordered w-full max-w-xs"
+        items={autocompleteSpells4}
+        bind:selectedItem={selectedSpell4}
       />
     {/if}
     {#if spellOrder}
