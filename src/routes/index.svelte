@@ -5,12 +5,11 @@
 <script>
   import { slide, fly } from 'svelte/transition';
   import AutoComplete from "simple-svelte-autocomplete";
-  import RNGMap from "../data/RNGMap.json";
   import spellTableFR from "../data/table.json";
   import spellTableEN from "../data/tableEN.json";
   import spellTableJP from "../data/tableJP.json";
   import Faq from '../components/FAQ.svelte';
-  import getManip from '../lib/manip.js'
+  import getManip, { generateComputedTable } from '../lib/manip.js'
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
@@ -37,42 +36,8 @@
 
   let manip;
 
-  $: computedTable = RNGMap.map((row) => {
-    return {
-      ...row,
-      current_crisis_level: computeCrisisLevel(row.random_mod, currentHp, auraChecked, maxHp),
-    };
-  }).map((row) => {
-    const spellName1 =
-      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
-        row.entry - 1
-      ];
-    const rowEntryModulo = spellTable?.[row.table - 1]?.[
-      row.current_crisis_level - 1
-    ]?.[row.entry]
-      ? row.entry
-      : row.entry - 256;
-    const spellName2 =
-      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
-        rowEntryModulo
-      ];
-    const spellName3 =
-      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
-        rowEntryModulo + 1
-      ];
-    const spellName4 =
-      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
-        rowEntryModulo + 2
-      ];
-    return {
-      ...row,
-      spell_name1: spellName1,
-      spell_name2: spellName2,
-      spell_name3: spellName3,
-      spell_name4: spellName4,
-      the_end_table: row.table === 4 && row.current_crisis_level === 4,
-    };
-  });
+  
+  $: computedTable = generateComputedTable(currentHp, auraChecked, maxHp, category, deadCharacters, spellTable)
 
   $: filteredComputedTable = computedTable
     .filter((row) => row.current_crisis_level > 0)
@@ -123,24 +88,6 @@
     })
     .sort();  
 
-  function computeCrisisLevel(random_mod, currentHp, auraChecked, maxHp) {
-    const hpMod = Math.floor((2500 * currentHp) / maxHp);
-    const deathBonus = deadCharacters * 200 + 1600;
-    let statusSum = 0
-    if (auraChecked && category === '100%') {
-      statusSum += 200
-    }
-    const statusBonus = statusSum * 10;
-    const limitLevel = Math.floor(
-      (statusBonus + deathBonus - hpMod) / (random_mod + 160)
-    );
-
-    if (limitLevel <= 4) return 0;
-    if (limitLevel === 5) return 1;
-    if (limitLevel === 6) return 2;
-    if (limitLevel === 7) return 3;
-    return 4;
-  }
 
   function resetSpells() {
     selectedSpell1 = "";

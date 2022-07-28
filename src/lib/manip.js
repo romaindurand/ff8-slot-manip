@@ -1,3 +1,5 @@
+import RNGMap from "../data/RNGMap.json";
+
 export default function getManip(
   currentTable,
   currentCrisis,
@@ -23,7 +25,7 @@ function getManipText(manip) {
   return `do-over \tx${manip.doOver1} \nskip-turn \tx${manip.skipTurn} \ndo-over \tx${manip.doOver2}`
 }
 
-function computeManip(
+export function computeManip(
   currentTable,
   currentCrisis,
   rng,
@@ -115,13 +117,13 @@ function computeClosestBlackDot(currentRng, blackDots) {
   return closestBlackDot;
 }
 
-function computeFastDoOver(currentRNG) {
+export function computeFastDoOver(currentRNG) {
   let doOver1 = Math.floor((183 - currentRNG) / 4);
   if (doOver1 < 0) doOver1 += 64;
   return doOver1;
 }
 
-function computeDoOver1(delta1) {
+export function computeDoOver1(delta1) {
   let doOver1 = Math.floor(delta1 / 4);
   if (doOver1 < 0) doOver1 += 64;
   return doOver1;
@@ -148,4 +150,63 @@ function computeDelta2(closestBlackDot) {
 function computeSkipTurn(delta) {
   let skipTurn = delta % 4;
   return skipTurn;
+}
+
+function computeCrisisLevel(random_mod, currentHp, auraChecked, maxHp, category, deadCharacters) {
+  const hpMod = Math.floor((2500 * currentHp) / maxHp);
+  const deathBonus = deadCharacters * 200 + 1600;
+  let statusSum = 0
+  if (auraChecked && category === '100%') {
+    statusSum += 200
+  }
+  const statusBonus = statusSum * 10;
+  const limitLevel = Math.floor(
+    (statusBonus + deathBonus - hpMod) / (random_mod + 160)
+  );
+
+  if (limitLevel <= 4) return 0;
+  if (limitLevel === 5) return 1;
+  if (limitLevel === 6) return 2;
+  if (limitLevel === 7) return 3;
+  return 4;
+}
+
+export function generateComputedTable(currentHp, auraChecked, maxHp, category, deadCharacters, spellTable) {
+  return RNGMap.map((row) => {
+    return {
+      ...row,
+      current_crisis_level: computeCrisisLevel(row.random_mod, currentHp, auraChecked, maxHp, category, deadCharacters),
+    };
+  })
+  .map((row) => {
+    const spellName1 =
+      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
+        row.entry - 1
+      ];
+    const rowEntryModulo = spellTable?.[row.table - 1]?.[
+      row.current_crisis_level - 1
+    ]?.[row.entry]
+      ? row.entry
+      : row.entry - 256;
+    const spellName2 =
+      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
+        rowEntryModulo
+      ];
+    const spellName3 =
+      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
+        rowEntryModulo + 1
+      ];
+    const spellName4 =
+      spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
+        rowEntryModulo + 2
+      ];
+    return {
+      ...row,
+      spell_name1: spellName1,
+      spell_name2: spellName2,
+      spell_name3: spellName3,
+      spell_name4: spellName4,
+      the_end_table: row.table === 4 && row.current_crisis_level === 4,
+    };
+  });
 }
