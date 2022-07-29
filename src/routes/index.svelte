@@ -5,11 +5,10 @@
 <script>
   import { slide, fly } from 'svelte/transition';
   import AutoComplete from "simple-svelte-autocomplete";
-  import spellTableFR from "../data/table.json";
-  import spellTableEN from "../data/tableEN.json";
-  import spellTableJP from "../data/tableJP.json";
+  import ToggleLang from '../components/ToggleLang.svelte';
   import Faq from '../components/FAQ.svelte';
-  import getManip, { generateComputedTable } from '../lib/manip.js'
+  import spellTableFR from "../data/table.json";
+  import getManip, { filterBySelectedSpells, generateAutoCompleteSpells, generateComputedTable } from '../lib/manip.js'
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
@@ -21,6 +20,7 @@
   let showManipCheckbox
   let category
   let maxHp
+  let spellTable = spellTableFR
 
   $: {
     maxHp = {
@@ -31,63 +31,26 @@
     }[category];
     currentHp = currentHp;
   }
-  let lang = "FR";
-  $: spellTable = lang === "FR" ? spellTableFR : lang === "EN" ? spellTableEN : spellTableJP;
 
   let manip;
-
   
   $: computedTable = generateComputedTable(currentHp, auraChecked, maxHp, category, deadCharacters, spellTable)
 
-  $: filteredComputedTable = computedTable
-    .filter((row) => row.current_crisis_level > 0)
-    .filter((row) => {
-      if (!selectedSpell1) return true;
-      return row.spell_name1 === selectedSpell1;
-    })
-    .filter((row) => {
-      if (!selectedSpell2) return true;
-      return row.spell_name2 === selectedSpell2;
-    })
-    .filter((row) => {
-      if (!selectedSpell3) return true;
-      return row.spell_name3 === selectedSpell3;
-    })
-    .filter((row) => {
-      if (!selectedSpell4) return true;
-      return row.spell_name4 === selectedSpell4;
-    });
+  function filterComputedTable(computedTable, selectedSpells) {
+    return computedTable
+      .filter((row) => row.current_crisis_level > 0)
+      .filter(filterBySelectedSpells(0, selectedSpells))
+      .filter(filterBySelectedSpells(1, selectedSpells))
+      .filter(filterBySelectedSpells(2, selectedSpells))
+      .filter(filterBySelectedSpells(3, selectedSpells))
+  }
 
-  
+  $: filteredComputedTable = filterComputedTable(computedTable, [selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4])
 
-  $: autocompleteSpells1 = filteredComputedTable
-    .map((row) => row.spell_name1)
-    .filter((spell, index, spells) => {
-      return spells.indexOf(spell) === index;
-    })
-    .sort();
-
-  $: autocompleteSpells2 = filteredComputedTable
-    .map((row) => row.spell_name2)
-    .filter((spell, index, spells) => {
-      return spells.indexOf(spell) === index;
-    })
-    .sort();
-
-  $: autocompleteSpells3 = filteredComputedTable
-    .map((row) => row.spell_name3)
-    .filter((spell, index, spells) => {
-      return spells.indexOf(spell) === index;
-    })
-    .sort();
-
-  $: autocompleteSpells4 = filteredComputedTable
-    .map((row) => row.spell_name4)
-    .filter((spell, index, spells) => {
-      return spells.indexOf(spell) === index;
-    })
-    .sort();  
-
+  $: autocompleteSpells1 = generateAutoCompleteSpells(filteredComputedTable, 1)
+  $: autocompleteSpells2 = generateAutoCompleteSpells(filteredComputedTable, 2)
+  $: autocompleteSpells3 = generateAutoCompleteSpells(filteredComputedTable, 3)
+  $: autocompleteSpells4 = generateAutoCompleteSpells(filteredComputedTable, 4)
 
   function resetSpells() {
     selectedSpell1 = "";
@@ -125,30 +88,21 @@
         computedTable,
         spellOrder,
       )
-      // filteredComputedTable[0], spellOrder, computedTable, category);
       showManipCheckbox.checked = true
     } else {
       manip = null;
     }
   }
 
-  function switchLang(targetLang) {
-    lang = targetLang;
+  function switchLang(event) {
+    spellTable = event.detail.spellTable;
     resetSpells();
   }
 </script>
 <div class="main-content max-w-lg">
   <h1>Slot Manipulation</h1>
   
-  <!-- <button class="btn toggle-lang" on:click={toggleLang}>{lang}</button> -->
-  <div class="dropdown dropdown-end toggle-lang">
-    <span tabindex="0" class="btn m-1">Spells language</span>
-    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-primary rounded-box w-52">
-      <li><button on:click={() => switchLang('FR')}>Français</button></li>
-      <li><button on:click={() => switchLang('EN')}>English</button></li>
-      <li><button on:click={() => switchLang('JP')}>Japanese</button></li>
-    </ul>
-  </div>
+  <ToggleLang on:toggle={switchLang} />
   
   <div class="form-control w-full max-w-xs">
     <select bind:value={category} class="select select-primary w-full max-w-xs">
@@ -189,7 +143,7 @@
         bind:selectedItem={selectedSpell1}
       />
       {#if selectedSpell1 && !selectedSpell2 && !selectedSpell3 && !selectedSpell4}
-        <button class="btn btn-outline btn-error" on:click={() => resetSpell(1)}>✕</button>
+        <button class="btn btn-outline btn-error reset-button" on:click={() => resetSpell(1)}>✕</button>
       {/if}
       {#if selectedSpell1}
       <AutoComplete
@@ -200,7 +154,7 @@
       />
       {/if}
       {#if selectedSpell2 && !selectedSpell3 && !selectedSpell4}
-        <button class="btn btn-outline btn-error" on:click={() => resetSpell(2)}>✕</button>
+        <button class="btn btn-outline btn-error reset-button" on:click={() => resetSpell(2)}>✕</button>
       {/if}
       {#if selectedSpell2}
         <AutoComplete
@@ -211,7 +165,7 @@
         />
       {/if}
       {#if selectedSpell3 && !selectedSpell4}
-        <button class="btn btn-outline btn-error"  on:click={() => resetSpell(3)}>✕</button>
+        <button class="btn btn-outline btn-error reset-button"  on:click={() => resetSpell(3)}>✕</button>
       {/if}
       {#if selectedSpell3}
         <AutoComplete
@@ -222,7 +176,7 @@
         />
       {/if}
       {#if selectedSpell4}
-        <button class="btn btn-outline btn-error" on:click={() => resetSpell(4)}>✕</button>
+        <button class="btn btn-outline btn-error reset-button" on:click={() => resetSpell(4)}>✕</button>
       {/if}
     </div>
     {#if spellOrder}
@@ -277,9 +231,9 @@
 <a href="https://github.com/romaindurand/ff8-slot-manip">
   <img
     loading="lazy"
-    width="149"
-    height="149"
-    src="https://github.blog/wp-content/uploads/2008/12/forkme_left_darkblue_121621.png?resize=149%2C149"
+    width="130"
+    height="130"
+    src="https://github.blog/wp-content/uploads/2008/12/forkme_left_darkblue_121621.png?resize=130%2C130"
     class="github-corner"
     alt="Fork me on GitHub"
     data-recalc-dims="1">
@@ -291,7 +245,7 @@
     margin-bottom: 1rem;
   }
 
-  .btn-error, :global(.autocomplete), input, .btn, pre, ul, select {
+  .btn-error, :global(.autocomplete), input, .btn, pre, select {
     margin-bottom: 1rem;
   }
 
@@ -304,10 +258,10 @@
     height: 2.5rem;
   }
 
-  .toggle-lang {
+  :global(.ToggleLang) {
     position: absolute;
-    top: 2rem;
-    right: 2rem;
+    top: .5rem;
+    right: .5rem;
   }
 
   pre {
@@ -316,7 +270,10 @@
     color: white;
   }
 
-
+  .reset-button {
+    min-height: 2.5rem;
+    height: 2.5rem;
+  }
 
   .github-corner {
     position: fixed;
@@ -330,6 +287,10 @@
   @media (max-width: 680px) {
     .github-corner {
       opacity: 0.2;
+    }
+
+    .github-corner:hover {
+      opacity: 1;
     }
   }
 

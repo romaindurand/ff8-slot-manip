@@ -210,3 +210,20 @@ export function generateComputedTable(currentHp, auraChecked, maxHp, category, d
     };
   });
 }
+
+export function generateAutoCompleteSpells(filteredComputedTable, spellNameIndex) {
+  return filteredComputedTable
+    .map((row) => row[`spell_name${spellNameIndex}`])
+    .filter((spell, index, spells) => {
+      return spells.indexOf(spell) === index;
+    })
+    .sort();
+}
+
+export function filterBySelectedSpells(selectedSpellIndex, selectedSpells) {
+  return function(row) {
+    const selectedSpell = selectedSpells[selectedSpellIndex]
+    if (!selectedSpell) return true;
+    return row[`spell_name${selectedSpellIndex + 1}`] === selectedSpell;
+  };
+}
