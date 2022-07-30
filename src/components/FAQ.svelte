@@ -6,8 +6,9 @@
 <ul class="w-full max-w-lg">
   <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
   <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>
-  <li>Entry available at HP;RNG;DoOver : 34;179;0 // 32;175;1 // 4;91;22 // 18;79;25 // 26;43;34 // 54;251;46 // 51;231;51 // 38;207;57 // 21;187;62.</li>
   <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li>
+  <li>Entry available at HP;RNG;DoOver : 34;179;0 // 32;175;1 // 4;91;22 // 18;79;25 // 26;43;34 // 54;251;46 // 51;231;51 // 38;207;57 // 21;187;62.</li>
+  <li class="red">you roughly have 23seconds with quetz summon to find The End, when damage for summon is rolled it changes rng and then manip is Dead (you can see the exact moment where damage is rolled on the video)</li>
 </ul>
 {/if}
 

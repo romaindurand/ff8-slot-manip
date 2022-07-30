@@ -21,8 +21,8 @@ export default function getManip(
 }
 
 function getManipText(manip) {
-  if (manip.fastDoOver) return `do-over \tx${manip.fastDoOver}`
-  return `do-over \tx${manip.doOver1} \nskip-turn \tx${manip.skipTurn} \ndo-over \tx${manip.doOver2}`
+  if (manip.fastDoOver) return `do-over \tx${manip.fastDoOver}`;
+  return `do-over \tx${manip.doOver1} \nskip-turn \tx${manip.skipTurn} \ndo-over \tx${manip.doOver2}`;
 }
 
 export function computeManip(
@@ -152,12 +152,28 @@ function computeSkipTurn(delta) {
   return skipTurn;
 }
 
-function computeCrisisLevel(random_mod, currentHp, auraChecked, maxHp, category, deadCharacters) {
+function computeCrisisLevel(
+  random_mod,
+  currentHp,
+  auraChecked,
+  maxHp,
+  category,
+  deadCharacters
+) {
   const hpMod = Math.floor((2500 * currentHp) / maxHp);
   const deathBonus = deadCharacters * 200 + 1600;
-  let statusSum = 0
-  if (auraChecked && category === '100%') {
-    statusSum += 200
+  let statusSum = 0;
+  if (auraChecked && category === "100%") {
+    statusSum += 200;
+  }
+  if (blindChecked && category === "NoJunction/NoLevel") {
+    statusSum += 30;
+  }
+  if (silenceChecked && category === "NoJunction/NoLevel") {
+    statusSum += 30;
+  }
+  if (slowChecked && category === "NoJunction/NoLevel") {
+    statusSum += 15;
   }
   const statusBonus = statusSum * 10;
   const limitLevel = Math.floor(
@@ -171,14 +187,27 @@ function computeCrisisLevel(random_mod, currentHp, auraChecked, maxHp, category,
   return 4;
 }
 
-export function generateComputedTable(currentHp, auraChecked, maxHp, category, deadCharacters, spellTable) {
+export function generateComputedTable(
+  currentHp,
+  auraChecked,
+  maxHp,
+  category,
+  deadCharacters,
+  spellTable
+) {
   return RNGMap.map((row) => {
     return {
       ...row,
-      current_crisis_level: computeCrisisLevel(row.random_mod, currentHp, auraChecked, maxHp, category, deadCharacters),
+      current_crisis_level: computeCrisisLevel(
+        row.random_mod,
+        currentHp,
+        auraChecked,
+        maxHp,
+        category,
+        deadCharacters
+      ),
     };
-  })
-  .map((row) => {
+  }).map((row) => {
     const spellName1 =
       spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
         row.entry - 1
@@ -211,7 +240,10 @@ export function generateComputedTable(currentHp, auraChecked, maxHp, category, d
   });
 }
 
-export function generateAutoCompleteSpells(filteredComputedTable, spellNameIndex) {
+export function generateAutoCompleteSpells(
+  filteredComputedTable,
+  spellNameIndex
+) {
   return filteredComputedTable
     .map((row) => row[`spell_name${spellNameIndex}`])
     .filter((spell, index, spells) => {
@@ -221,8 +253,8 @@ export function generateAutoCompleteSpells(filteredComputedTable, spellNameIndex
 }
 
 export function filterBySelectedSpells(selectedSpellIndex, selectedSpells) {
-  return function(row) {
-    const selectedSpell = selectedSpells[selectedSpellIndex]
+  return function (row) {
+    const selectedSpell = selectedSpells[selectedSpellIndex];
     if (!selectedSpell) return true;
     return row[`spell_name${selectedSpellIndex + 1}`] === selectedSpell;
   };

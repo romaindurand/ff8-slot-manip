@@ -17,6 +17,9 @@
   let currentHp = 34;
   let showRawData = false;
   let auraChecked = false;
+  let blindChecked = false;
+  let silenceChecked = false;
+  let slowChecked = false;
   let showManipCheckbox
   let category
   let maxHp
@@ -118,6 +121,27 @@
   <label transition:slide class="label cursor-pointer">
       <span class="label-text">Aura status ?</span> 
       <input type="checkbox" class="checkbox" bind:checked={auraChecked}/>
+    </label>
+    {/if}
+
+  {#if category === 'NoJunction/NoLevel'}  
+  <label transition:slide class="label cursor-pointer">
+      <span class="label-text">Blind status ?</span> 
+      <input type="checkbox" class="checkbox" bind:checked={blindChecked}/>
+    </label>
+    {/if}
+      
+  {#if category === 'NoJunction/NoLevel'}  
+  <label transition:slide class="label cursor-pointer">
+      <span class="label-text">Silence status ?</span> 
+      <input type="checkbox" class="checkbox" bind:checked={silenceChecked}/>
+    </label>
+    {/if}
+
+  {#if category === 'NoJunction/NoLevel'}  
+  <label transition:slide class="label cursor-pointer">
+      <span class="label-text">Slow status ?</span> 
+      <input type="checkbox" class="checkbox" bind:checked={slowChecked}/>
     </label>
     {/if}
   
