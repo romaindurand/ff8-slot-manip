@@ -1,5 +1,4 @@
 [
-  { "random_mod": 106, "rng": 255, "table": 4, "entry": 26 },
   { "random_mod": 202, "rng": 0, "table": 3, "entry": 56 },
   { "random_mod": 99, "rng": 1, "table": 2, "entry": 3 },
   { "random_mod": 6, "rng": 2, "table": 1, "entry": 36 },
@@ -254,5 +253,6 @@
   { "random_mod": 5, "rng": 251, "table": 4, "entry": 25 },
   { "random_mod": 255, "rng": 252, "table": 3, "entry": 55 },
   { "random_mod": 92, "rng": 253, "table": 2, "entry": 2 },
-  { "random_mod": 199, "rng": 254, "table": 1, "entry": 3 }
+  { "random_mod": 199, "rng": 254, "table": 1, "entry": 3 },
+  { "random_mod": 106, "rng": 255, "table": 4, "entry": 26 }
 ]

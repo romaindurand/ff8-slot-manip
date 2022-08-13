@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { computeDoOver1, computeFastDoOver, generateComputedTable, computeManip } from './manip'
+import { computeDoOver1, computeFastDoOver, generateComputedTable, computeManip, getTranslatedSpell } from './manip'
 import spellTable from "../data/table.json";
 
 describe('compute fast do over', () => {
   it('should compute a fast do over', async () => {
-    expect(computeFastDoOver(235)).toEqual(51)
+    expect(computeFastDoOver(235, 183)).toEqual(51)
   })
 })
 
@@ -17,20 +17,31 @@ describe('compute do over 1', () => {
 })
 
 describe('compute manip', () => {
-  it('should compute manip', async () => {
+  it('should compute manip for Any% rng 125', async () => {
     let category = 'Any%'
     let currentCrisis = 1
     let currentTable = 2
     let rng = 125
     let spellOrder = 2
-    let computedTable = generateComputedTable(34, false, 482, category, 0, spellTable)
+    let computedTable = generateComputedTable({
+      currentHp: 34,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 482,
+      category,
+      deadCharacters: 0,
+      spellTable
+    })
     expect(computeManip(
       currentTable,
       currentCrisis,
       rng,
       category,
       computedTable,
-      spellOrder)
+      spellOrder,
+      'The End (1)')
     ).toEqual({
       doOver1: 11,
       skipTurn: 2,
@@ -38,20 +49,31 @@ describe('compute manip', () => {
     })
   })
 
-  it('should compute manip', async () => {
+  it('should compute manip for any% rng 203', async () => {
     let category = 'Any%'
     let currentCrisis = 2
     let currentTable = 4
     let rng = 203
     let spellOrder = 2
-    let computedTable = generateComputedTable(34, false, 482, category, 0, spellTable)
+    let computedTable = generateComputedTable({
+      currentHp: 34,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 482,
+      category,
+      deadCharacters: 0,
+      spellTable
+    })
     expect(computeManip(
       currentTable,
       currentCrisis,
       rng,
       category,
       computedTable,
-      spellOrder)
+      spellOrder,
+      'The End (1)')
     ).toEqual({
       doOver1: 4,
       skipTurn: 4,
@@ -59,24 +81,128 @@ describe('compute manip', () => {
     })
   })
 
-  it('should compute manip', async () => {
+  it('should compute manip for 100% rng 203', async () => {
     let category = '100%'
     let currentCrisis = 3
     let currentTable = 4
     let rng = 203
     let spellOrder = 2
-    let computedTable = generateComputedTable(34, false, 482, category, 0, spellTable)
+    let computedTable = generateComputedTable({
+      currentHp: 34,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 482,
+      category,
+      deadCharacters: 0,
+      spellTable
+    })
     expect(computeManip(
       currentTable,
       currentCrisis,
       rng,
       category,
       computedTable,
-      spellOrder)
+      spellOrder,
+      'The End (1)')
     ).toEqual({
       doOver1: 2,
       skipTurn: 12,
       doOver2: 51
     })
+  })
+  
+  it('should compute manip for 100% rng 203 with aura checked', async () => {
+    let category = '100%'
+    let currentCrisis = 4
+    let currentTable = 4
+    let rng = 203
+    let spellOrder = 2
+    let computedTable = generateComputedTable({
+      currentHp: 34,
+      auraChecked: true,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 9576,
+      category,
+      deadCharacters: 0,
+      spellTable
+    })
+    expect(computeManip(
+      currentTable,
+      currentCrisis,
+      rng,
+      category,
+      computedTable,
+      spellOrder,
+      'The End (1)')
+    ).toEqual({ fastDoOver: 57 })
+  })
+
+  it('should compute manip for 100% rng 150 with aura checked', async () => {
+    let category = '100%'
+    let currentCrisis = 4
+    let currentTable = 1
+    let rng = 150
+    let spellOrder = 2
+    let computedTable = generateComputedTable({
+      currentHp: 34,
+      auraChecked: true,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 9576,
+      category,
+      deadCharacters: 0,
+      spellTable
+    })
+    expect(computeManip(
+      currentTable,
+      currentCrisis,
+      rng,
+      category,
+      computedTable,
+      spellOrder,
+      'The End (1)')
+    ).toEqual({ doOver1: 0, skipTurn: 9, doOver2: 2 })
+  })
+  
+  it('should compute manip for 100% rng 203 for arkange with 34 hp', async () => {
+    let category = '100%'
+    let currentCrisis = 3
+    let currentTable = 3
+    let rng = 216
+    let spellOrder = 1 //todo: update ?
+    let computedTable = generateComputedTable({
+      currentHp: 34,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 9576,
+      category,
+      deadCharacters: 0,
+      spellTable
+    })
+    expect(computeManip(
+      currentTable,
+      currentCrisis,
+      rng,
+      category,
+      computedTable,
+      spellOrder,
+      'Arkange (1)')
+    ).toEqual({ fastDoOver: 57 }) //todo: update result
+  })
+})
+
+describe('getTranslatedSpell', () => {
+  it('should return the translation for a spell', () => {
+    expect(getTranslatedSpell('Arkange (1)', 'FR')).toEqual('Arkange (1)')
+    expect(getTranslatedSpell('Arkange (1)', 'JP')).toEqual('レビテガ (1)')
+    expect(getTranslatedSpell('The End (1)', 'JP')).toEqual('ジエンド (1)')
+    expect(getTranslatedSpell('Wall (1)', 'JP')).toEqual('ウォール (1)')
   })
 })

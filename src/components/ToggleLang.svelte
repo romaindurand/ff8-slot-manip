@@ -11,6 +11,7 @@
 	function toggleLang(targetLang) {
 		dispatch('toggle', {
 			spellTable: langs.find(lang => lang.value === targetLang).spellTable,
+      lang: targetLang
 		});
 	}
 

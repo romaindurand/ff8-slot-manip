@@ -8,7 +8,7 @@
   import ToggleLang from '../components/ToggleLang.svelte';
   import Faq from '../components/FAQ.svelte';
   import spellTableFR from "../data/table.json";
-  import getManip, { filterBySelectedSpells, generateAutoCompleteSpells, generateComputedTable } from '../lib/manip.js'
+  import getManip, { filterBySelectedSpells, generateAutoCompleteSpells, generateComputedTable, getTranslatedSpell } from '../lib/manip.js'
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
@@ -24,6 +24,19 @@
   let category
   let maxHp
   let spellTable = spellTableFR
+  let lang = 'FR'
+  $: targetableSpells = [
+    'Joobu (1)',
+    'Wall (1)',
+    'Arkange (1)',
+    'The End (1)'
+  ].map(spell => {
+    return {
+      translatedSpell: getTranslatedSpell(spell, lang),
+      spell
+    }
+  })
+  let targetedSpell = {translatedSpell: 'The End (1)', spell: 'The End (1)'}
 
   $: {
     maxHp = {
@@ -37,7 +50,17 @@
 
   let manip;
   
-  $: computedTable = generateComputedTable(currentHp, auraChecked, maxHp, category, deadCharacters, spellTable)
+  $: computedTable = generateComputedTable({
+      currentHp,
+      auraChecked,
+      blindChecked,
+      silenceChecked,
+      slowChecked,
+      maxHp,
+      category,
+      deadCharacters,
+      spellTable
+    })
 
   function filterComputedTable(computedTable, selectedSpells) {
     return computedTable
@@ -74,7 +97,7 @@
     }
   }
 
-  $: spellList = [selectedSpell1, selectedSpell2, selectedSpell3].filter(
+  $: spellList = [selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4].filter(
     (spell) => spell
   );
   $: spellOrder = spellList.length;
@@ -90,6 +113,7 @@
         category,
         computedTable,
         spellOrder,
+        targetedSpell.spell,
       )
       showManipCheckbox.checked = true
     } else {
@@ -99,7 +123,9 @@
 
   function switchLang(event) {
     spellTable = event.detail.spellTable;
+    lang = event.detail.lang;
     resetSpells();
+    targetedSpell = {translatedSpell: getTranslatedSpell(targetedSpell.spell, lang), spell: targetedSpell.spell}
   }
 </script>
 <div class="main-content max-w-lg">
@@ -158,6 +184,18 @@
       class="input input-primary input-bordered w-full max-w-xs"
       bind:value={currentHp}
     />
+
+    <label class="label" for="targetedSpell">
+      <span class="label-text">Targeted spell</span>
+    </label>
+    <AutoComplete
+      placeholder="Targeted Spell"
+      inputClassName="input input-secondary input-bordered w-full max-w-xs"
+      items={targetableSpells}
+      labelFieldName="translatedSpell"
+      bind:selectedItem={targetedSpell}
+    />
+
     <div class="grid-cols-4">
 
       <AutoComplete
@@ -278,7 +316,7 @@
     padding-right: 0;
 
   }
-  :global(input.input.input-primary.autocomplete-input) {
+  :global(input.input.input-primary.autocomplete-input, input.input.input-secondary.autocomplete-input) {
     height: 2.5rem;
   }
 
@@ -320,9 +358,5 @@
 
   .main-content {
     margin: auto;
-  }
-
-  li button {
-    color: white;
   }
 </style>
