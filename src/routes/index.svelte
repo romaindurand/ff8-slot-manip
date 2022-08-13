@@ -8,7 +8,12 @@
   import ToggleLang from '../components/ToggleLang.svelte';
   import Faq from '../components/FAQ.svelte';
   import spellTableFR from "../data/table.json";
-  import getManip, { filterBySelectedSpells, generateAutoCompleteSpells, generateComputedTable, getTranslatedSpell } from '../lib/manip.js'
+  import getManip, {
+    filterComputedTable,
+    generateAutoCompleteSpells,
+    generateComputedTable,
+    getTranslatedSpell,
+  } from '../lib/manip.js'
 
   console.log('%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand', 'font-size: 1.5em; font-weight: bold; color: #ff0000;');
 
@@ -61,15 +66,7 @@
       deadCharacters,
       spellTable
     })
-
-  function filterComputedTable(computedTable, selectedSpells) {
-    return computedTable
-      .filter((row) => row.current_crisis_level > 0)
-      .filter(filterBySelectedSpells(0, selectedSpells))
-      .filter(filterBySelectedSpells(1, selectedSpells))
-      .filter(filterBySelectedSpells(2, selectedSpells))
-      .filter(filterBySelectedSpells(3, selectedSpells))
-  }
+  $: console.table(computedTable)
 
   $: filteredComputedTable = filterComputedTable(computedTable, [selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4])
 
