@@ -53,6 +53,10 @@
     currentHp = currentHp;
   }
 
+  $: {
+    if(category === '100%') currentHp = 520
+  }
+
   let manip;
   
   $: computedTable = generateComputedTable({

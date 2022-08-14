@@ -2,6 +2,17 @@
   export let category
 </script>
 
+<!-- add collapsable secion -->
+
+<!-- <iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/ZmcaEiFeYi4"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen></iframe> -->
+
 {#if category === 'Any%'}
 <ul class="w-full max-w-lg">
   <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>

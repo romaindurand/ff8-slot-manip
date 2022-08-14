@@ -57,6 +57,10 @@ export function computeManip(
   let closestSpellInstances = findClosestSpellInstances(currentRNG, spellInstances);
   //compute blackdots based on closest instances
   let blackDots = computeBlackDots(computedTable, closestSpellInstances);
+  while (blackDots.length === 0) {
+    closestSpellInstances = findClosestSpellInstances(closestSpellInstances[0].spellRNG, spellInstances);
+    blackDots = computeBlackDots(computedTable, closestSpellInstances);
+  }
   //find closest blackdot
   let closestBlackDot = computeClosestBlackDot(currentRNG, blackDots)
   let {targetTable, targetCrisis} = getTargetTableCrisis(closestBlackDot.spellRNG, computedTable)
@@ -119,31 +123,35 @@ export function computeManip(
       skipTurn += 4;
     }
 
-    if (doOver1 === 0) doOver2 -=1
+    // if (doOver1 === 0) doOver2 -=1
 
-    // find next spell instances
-    const newClosestSpellInstances = findClosestSpellInstances(closestSpellInstances[0].spellRNG, spellInstances);
-    shouldUseNextInstances = false
-    if (currentRNG + doOver1*4 + skipTurn >= closestBlackDot.rng) {
-        shouldUseNextInstances = true
-    }
-    if (deepEqual(newClosestSpellInstances, closestSpellInstances)) {
-      // use next closest blackdot
-      const blackDotIndex = blackDots.findIndex((el) => el.rng === closestBlackDot.rng);
-      closestBlackDot.rng = blackDots[blackDotIndex + 1].rng || blackDots[0].rng;
+    do {
+      // find next spell instances
+      const newClosestSpellInstances = findClosestSpellInstances(closestSpellInstances[0].spellRNG, spellInstances);
+
       shouldUseNextInstances = false
-    }
-    if (shouldUseNextInstances) {
-      closestSpellInstances = newClosestSpellInstances;
+      if (blackDots.length === 0 /*|| currentRNG + doOver1*4 + skipTurn >= closestBlackDot.spellRNG*/) {
+        shouldUseNextInstances = true
+      }
+      if (deepEqual(newClosestSpellInstances, closestSpellInstances) || computedTable.every(row => row.current_crisis_level === 4)) {
+        // use next closest blackdot
+        const blackDotIndex = blackDots.findIndex((el) => el.rng === closestBlackDot.rng);
+        closestBlackDot.rng = blackDots[blackDotIndex + 1]?.rng || blackDots[0].rng;
+        shouldUseNextInstances = false
+      }
+      if (shouldUseNextInstances) {
+        closestSpellInstances = newClosestSpellInstances;
 
-      // compute new blackdots based on new closest spell instances
-      blackDots = computeBlackDots(computedTable, closestSpellInstances);
+        // compute new blackdots based on new closest spell instances
+        blackDots = computeBlackDots(computedTable, closestSpellInstances);
 
-      // find next black dot
-      closestBlackDot = computeClosestBlackDot(currentRNG, blackDots)
-    }
+        // find closest black dot
+        closestBlackDot = computeClosestBlackDot(currentRNG, blackDots)
+      }
+    } while ((blackDots.length === 0))
+    debugger
   } while ((doOver1 < 0 || doOver2 < 0 || shouldUseNextInstances) && loopCount > 0);
-  if (loopCount <= 0) return console.error('ERROR : loop count exceded')
+  if (loopCount <= 0) throw new Error('ERROR : loop count exceded')
 
   return {
     doOver1,
