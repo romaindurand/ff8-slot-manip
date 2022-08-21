@@ -11,19 +11,23 @@ export default function getManip(
   category,
   computedTable,
   spellOrder,
-  targetedSpellName,
+  targetedSpellName
 ) {
-  const manip = computeManip(
-    currentTable,
-    currentCrisis,
-    rng,
-    category,
-    computedTable,
-    spellOrder,
-    targetedSpellName,
-  );
+  try {
+    const manip = computeManip(
+      currentTable,
+      currentCrisis,
+      rng,
+      category,
+      computedTable,
+      spellOrder,
+      targetedSpellName
+    );
 
-  return getManipText(manip);
+    return getManipText(manip);
+  } catch {
+    return "Error : manip not computable (yet).";
+  }
 }
 
 function getManipText(manip) {
@@ -32,12 +36,12 @@ function getManipText(manip) {
 }
 
 function getTargetTableCrisis(spellRNG, computedTable) {
-  spellRNG -= 4
-  const targetRow = computedTable.find(row => spellRNG === row.rng)
+  spellRNG -= 4;
+  const targetRow = computedTable.find((row) => spellRNG === row.rng);
   return {
     targetTable: targetRow.table,
     targetCrisis: targetRow.current_crisis_level,
-  }
+  };
 }
 
 export function computeManip(
@@ -54,16 +58,26 @@ export function computeManip(
   //compute instances
   const spellInstances = computeSpellInstances(targetedSpellName);
   //find closest instance
-  let closestSpellInstances = findClosestSpellInstances(currentRNG, spellInstances);
+  let closestSpellInstances = findClosestSpellInstances(
+    currentRNG,
+    spellInstances
+  );
+  debugger;
   //compute blackdots based on closest instances
   let blackDots = computeBlackDots(computedTable, closestSpellInstances);
   while (blackDots.length === 0) {
-    closestSpellInstances = findClosestSpellInstances(closestSpellInstances[0].spellRNG, spellInstances);
+    closestSpellInstances = findClosestSpellInstances(
+      closestSpellInstances[0].spellRNG,
+      spellInstances
+    );
     blackDots = computeBlackDots(computedTable, closestSpellInstances);
   }
   //find closest blackdot
-  let closestBlackDot = computeClosestBlackDot(currentRNG, blackDots)
-  let {targetTable, targetCrisis} = getTargetTableCrisis(closestBlackDot.spellRNG, computedTable)
+  let closestBlackDot = computeClosestBlackDot(currentRNG, blackDots);
+  let { targetTable, targetCrisis } = getTargetTableCrisis(
+    closestBlackDot.spellRNG,
+    computedTable
+  );
 
   if (currentTable === targetTable && currentCrisis === targetCrisis) {
     return {
@@ -72,10 +86,14 @@ export function computeManip(
   }
 
   let doOver1, skipTurn, doOver2;
-  let shouldUseNextInstances = false
-  let loopCount = 100
+  let shouldUseNextInstances = false;
+  let loopCount = 100;
+  let updatedCurrentRNG;
   do {
-    ({targetTable, targetCrisis} = getTargetTableCrisis(closestBlackDot.spellRNG, computedTable))
+    ({ targetTable, targetCrisis } = getTargetTableCrisis(
+      closestBlackDot.spellRNG,
+      computedTable
+    ));
     loopCount--;
     const delta1 = computeDelta1(closestBlackDot.rng, currentRNG);
     const delta2 = computeDelta2(closestBlackDot);
@@ -107,8 +125,19 @@ export function computeManip(
       return { doOver1, skipTurn, doOver2 };
     }
 
+    updatedCurrentRNG = (currentRNG + doOver1 * 4 + skipTurn) % 256;
+    // currentRNG <= closestBlackDot.spellRNG <= updatedCurrentRNG
+    debugger;
+    if (
+      currentRNG <= closestBlackDot.spellRNG &&
+      closestBlackDot.spellRNG <= updatedCurrentRNG
+    ) {
+      debugger;
+      shouldUseNextInstances = true;
+    }
+
     // cas category === '100%'
-    if (skipTurn % 3 === 0 && skipTurn !== 0) {
+    if (skipTurn % 3 === 0 && skipTurn !== 0 && !shouldUseNextInstances) {
       return { doOver1, skipTurn, doOver2 };
     }
 
@@ -127,31 +156,58 @@ export function computeManip(
 
     do {
       // find next spell instances
-      const newClosestSpellInstances = findClosestSpellInstances(closestSpellInstances[0].spellRNG, spellInstances);
+      const newClosestSpellInstances = findClosestSpellInstances(
+        closestSpellInstances[0].spellRNG,
+        spellInstances
+      );
 
-      shouldUseNextInstances = false
-      if (blackDots.length === 0 /*|| currentRNG + doOver1*4 + skipTurn >= closestBlackDot.spellRNG*/) {
-        shouldUseNextInstances = true
+      shouldUseNextInstances = false;
+      if (
+        blackDots.length ===
+        0 /*|| currentRNG + doOver1*4 + skipTurn >= closestBlackDot.spellRNG*/
+      ) {
+        debugger;
+        shouldUseNextInstances = true;
       }
-      if (deepEqual(newClosestSpellInstances, closestSpellInstances) || computedTable.every(row => row.current_crisis_level === 4)) {
+
+      // currentRNG <= closestBlackDot.spellRNG <= updatedCurrentRNG
+      debugger;
+      if (
+        currentRNG <= closestBlackDot.spellRNG &&
+        closestBlackDot.spellRNG <= updatedCurrentRNG
+      ) {
+        debugger;
+        shouldUseNextInstances = true;
+      }
+
+      // go next spell instance
+      if (
+        deepEqual(newClosestSpellInstances, closestSpellInstances) ||
+        computedTable.every((row) => row.current_crisis_level === 4)
+      ) {
         // use next closest blackdot
-        const blackDotIndex = blackDots.findIndex((el) => el.rng === closestBlackDot.rng);
-        closestBlackDot.rng = blackDots[blackDotIndex + 1]?.rng || blackDots[0].rng;
-        shouldUseNextInstances = false
+        const blackDotIndex = blackDots.findIndex(
+          (el) => el.rng === closestBlackDot.rng
+        );
+        closestBlackDot.rng =
+          blackDots[blackDotIndex + 1]?.rng || blackDots[0].rng;
+        shouldUseNextInstances = false;
       }
       if (shouldUseNextInstances) {
         closestSpellInstances = newClosestSpellInstances;
-
         // compute new blackdots based on new closest spell instances
         blackDots = computeBlackDots(computedTable, closestSpellInstances);
 
         // find closest black dot
-        closestBlackDot = computeClosestBlackDot(currentRNG, blackDots)
+        closestBlackDot = computeClosestBlackDot(currentRNG, blackDots);
       }
-    } while ((blackDots.length === 0))
-    debugger
-  } while ((doOver1 < 0 || doOver2 < 0 || shouldUseNextInstances) && loopCount > 0);
-  if (loopCount <= 0) throw new Error('ERROR : loop count exceded')
+    } while (blackDots.length === 0);
+    debugger;
+  } while (
+    (doOver1 < 0 || doOver2 < 0 || shouldUseNextInstances) &&
+    loopCount > 0
+  );
+  if (loopCount <= 0) throw new Error("ERROR : loop count exceded");
 
   return {
     doOver1,
@@ -161,74 +217,90 @@ export function computeManip(
 }
 
 function computeSpellInstances(targetedSpellName) {
-  let instances = []
+  let instances = [];
   for (let tableIndex = 0; tableIndex < spellTableFR.length; tableIndex++) {
-    for (let crisisIndex = 0; crisisIndex < spellTableFR[tableIndex].length; crisisIndex++) {
-      for (let entryIndex = 0; entryIndex < spellTableFR[tableIndex][crisisIndex].length; entryIndex++) {
-        const spell = spellTableFR[tableIndex][crisisIndex][entryIndex]
+    for (
+      let crisisIndex = 0;
+      crisisIndex < spellTableFR[tableIndex].length;
+      crisisIndex++
+    ) {
+      for (
+        let entryIndex = 0;
+        entryIndex < spellTableFR[tableIndex][crisisIndex].length;
+        entryIndex++
+      ) {
+        const spell = spellTableFR[tableIndex][crisisIndex][entryIndex];
         if (spell === targetedSpellName) {
           instances.push({
             table: tableIndex + 1,
             crisis: crisisIndex + 1,
             entry: entryIndex + 1,
-          })
+          });
         }
       }
     }
   }
 
-  const instancesWithRngs = instances.map((instance) => {
-    const rngRow = RNGMap.find(row => {
-      return row.table === instance.table && row.entry === instance.entry
+  const instancesWithRngs = instances
+    .map((instance) => {
+      const rngRow = RNGMap.find((row) => {
+        return row.table === instance.table && row.entry === instance.entry;
+      });
+
+      return {
+        ...instance,
+        ...rngRow,
+      };
     })
+    .map((row) => {
+      return {
+        // ...row,
+        spellEntry: row.rng,
+        spellTable: row.table,
+        entry: row.entry,
+        spellCrisis: row.crisis,
+        spellRNG: row.rng + 4,
+      };
+    })
+    .sort((a, b) => {
+      return a.spellRNG - b.spellRNG;
+    });
 
-    return {
-      ...instance,
-      ...rngRow,
-    }
-  }).map(row => {
-    return {
-      // ...row,
-      spellEntry: row.rng,
-      spellTable: row.table,
-      entry: row.entry,
-      spellCrisis: row.crisis,
-      spellRNG: row.rng + 4,
-    }
-  }).sort((a, b) => {
-    return a.spellRNG - b.spellRNG
-  })
-
-  return instancesWithRngs
+  return instancesWithRngs;
 }
 
 function computeBlackDots(computedTable, closestSpellInstances) {
   const targetTableCrisis = [];
-  closestSpellInstances.forEach(row => {
-    if (!targetTableCrisis.find(target => target.table === row.spellTable && target.crisis === row.spellCrisis)) {
+  closestSpellInstances.forEach((row) => {
+    if (
+      !targetTableCrisis.find(
+        (target) =>
+          target.table === row.spellTable && target.crisis === row.spellCrisis
+      )
+    ) {
       targetTableCrisis.push({
         crisis: row.spellCrisis,
         table: row.spellTable,
         spellRNG: row.spellRNG,
-      })
+      });
     }
-  })
+  });
 
   const blackDots = computedTable
-    .map(row => {
+    .map((row) => {
       return {
         ...row,
         blackDot: isBlackDot(targetTableCrisis, row),
-        spellRNG: targetTableCrisis.find(checkBlackDot(row))?.spellRNG
-      }
+        spellRNG: targetTableCrisis.find(checkBlackDot(row))?.spellRNG,
+      };
     })
-    .filter(row => row.blackDot)
-    .map(row => {
+    .filter((row) => row.blackDot)
+    .map((row) => {
       return {
         rng: row.rng,
         spellRNG: row.spellRNG,
-      }
-    })
+      };
+    });
 
   return blackDots;
 }
@@ -236,9 +308,9 @@ function computeBlackDots(computedTable, closestSpellInstances) {
 function findClosestSpellInstances(currentRng, spellInstances) {
   let closestSpellInstance = spellInstances.find((spellInstance) => {
     return spellInstance.spellRNG > currentRng;
-  })
+  });
 
-  let closestSpellInstances
+  let closestSpellInstances;
   if (!closestSpellInstance) {
     closestSpellInstances = spellInstances.filter((spellInstance) => {
       return spellInstances[0].spellRNG === spellInstance.spellRNG;
@@ -258,7 +330,7 @@ function computeClosestBlackDot(currentRng, blackDots) {
       return blackDot.rng > currentRng;
     }) || blackDots[0];
 
-  return {...closestBlackDot};
+  return { ...closestBlackDot };
 }
 
 export function computeFastDoOver(currentRNG, targetedSpellRNG) {
@@ -343,7 +415,7 @@ export function generateComputedTable({
   maxHp,
   category,
   deadCharacters,
-  spellTable
+  spellTable,
 }) {
   return RNGMap.map((row) => {
     return {
@@ -389,9 +461,11 @@ export function generateComputedTable({
 }
 
 function computeRowEntryModulo(spellTable, row, spellIndex) {
-  return spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[row.entry + spellIndex - 2]
-  ? row.entry + (spellIndex - 2)
-  : row.entry - 64 + (spellIndex - 2);
+  return spellTable?.[row.table - 1]?.[row.current_crisis_level - 1]?.[
+    row.entry + spellIndex - 2
+  ]
+    ? row.entry + (spellIndex - 2)
+    : row.entry - 64 + (spellIndex - 2);
 }
 
 export function generateAutoCompleteSpells(
@@ -415,27 +489,33 @@ export function filterBySelectedSpells(selectedSpellIndex, selectedSpells) {
 }
 
 function isBlackDot(targetTableCrisis, row) {
-  return targetTableCrisis.some(checkBlackDot(row))
+  return targetTableCrisis.some(checkBlackDot(row));
 }
 
 function checkBlackDot(row) {
-    return target => target.table === row.table && target.crisis === row.current_crisis_level
+  return (target) =>
+    target.table === row.table && target.crisis === row.current_crisis_level;
 }
 
 export function getTranslatedSpell(frenchSpell, targetLang) {
-  const tableIndex = spellTableFR.findIndex(table => table.find(row => row.includes(frenchSpell)))
-  const crisisIndex = spellTableFR[tableIndex].findIndex(row => row.includes(frenchSpell))
-  const entryIndex = spellTableFR[tableIndex][crisisIndex].findIndex(row => row.includes(frenchSpell))
-
+  const tableIndex = spellTableFR.findIndex((table) =>
+    table.find((row) => row.includes(frenchSpell))
+  );
+  const crisisIndex = spellTableFR[tableIndex].findIndex((row) =>
+    row.includes(frenchSpell)
+  );
+  const entryIndex = spellTableFR[tableIndex][crisisIndex].findIndex((row) =>
+    row.includes(frenchSpell)
+  );
 
   const currentSpellTable = {
     FR: spellTableFR,
     EN: spellTableEN,
     JP: spellTableJP,
-  }[targetLang]
+  }[targetLang];
 
-  const currentSpell = currentSpellTable[tableIndex][crisisIndex][entryIndex]
-  return currentSpell
+  const currentSpell = currentSpellTable[tableIndex][crisisIndex][entryIndex];
+  return currentSpell;
 }
 
 export function filterComputedTable(computedTable, selectedSpells) {
@@ -444,5 +524,5 @@ export function filterComputedTable(computedTable, selectedSpells) {
     .filter(filterBySelectedSpells(0, selectedSpells))
     .filter(filterBySelectedSpells(1, selectedSpells))
     .filter(filterBySelectedSpells(2, selectedSpells))
-    .filter(filterBySelectedSpells(3, selectedSpells))
+    .filter(filterBySelectedSpells(3, selectedSpells));
 }
