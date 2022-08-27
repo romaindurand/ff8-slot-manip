@@ -35,12 +35,17 @@ function getManipText(manip) {
   return `do-over \tx${manip.doOver1} \nskip-turn \tx${manip.skipTurn} \ndo-over \tx${manip.doOver2}`;
 }
 
-function getTargetTableCrisis(spellRNG, computedTable) {
-  spellRNG -= 4;
-  const targetRow = computedTable.find((row) => spellRNG === row.rng);
+function getTargetTableCrisis(spellRNG, targetedSpellName) {
+  const targetRow = RNGMap.find((row) => row.rng === spellRNG);
+  const entry = targetRow.entry - 1;
+  const table = targetRow.table;
+  const crisisIndex =
+    spellTableFR[table - 1].findIndex((crisis) => {
+      return crisis[entry - 1] === targetedSpellName;
+    }) + 1;
   return {
-    targetTable: targetRow.table,
-    targetCrisis: targetRow.current_crisis_level,
+    targetTable: table,
+    targetCrisis: crisisIndex,
   };
 }
 
@@ -62,7 +67,6 @@ export function computeManip(
     currentRNG,
     spellInstances
   );
-  debugger;
   //compute blackdots based on closest instances
   let blackDots = computeBlackDots(computedTable, closestSpellInstances);
   while (blackDots.length === 0) {
@@ -76,7 +80,7 @@ export function computeManip(
   let closestBlackDot = computeClosestBlackDot(currentRNG, blackDots);
   let { targetTable, targetCrisis } = getTargetTableCrisis(
     closestBlackDot.spellRNG,
-    computedTable
+    targetedSpellName
   );
 
   if (currentTable === targetTable && currentCrisis === targetCrisis) {
@@ -92,7 +96,7 @@ export function computeManip(
   do {
     ({ targetTable, targetCrisis } = getTargetTableCrisis(
       closestBlackDot.spellRNG,
-      computedTable
+      targetedSpellName
     ));
     loopCount--;
     const delta1 = computeDelta1(closestBlackDot.rng, currentRNG);
@@ -127,12 +131,10 @@ export function computeManip(
 
     updatedCurrentRNG = (currentRNG + doOver1 * 4 + skipTurn) % 256;
     // currentRNG <= closestBlackDot.spellRNG <= updatedCurrentRNG
-    debugger;
     if (
       currentRNG <= closestBlackDot.spellRNG &&
       closestBlackDot.spellRNG <= updatedCurrentRNG
     ) {
-      debugger;
       shouldUseNextInstances = true;
     }
 
@@ -166,24 +168,24 @@ export function computeManip(
         blackDots.length ===
         0 /*|| currentRNG + doOver1*4 + skipTurn >= closestBlackDot.spellRNG*/
       ) {
-        debugger;
         shouldUseNextInstances = true;
       }
 
       // currentRNG <= closestBlackDot.spellRNG <= updatedCurrentRNG
-      debugger;
       if (
         currentRNG <= closestBlackDot.spellRNG &&
         closestBlackDot.spellRNG <= updatedCurrentRNG
       ) {
-        debugger;
         shouldUseNextInstances = true;
       }
 
       // go next spell instance
+      const doOver1Negative = doOver1 < 0;
+      const manipTooLong = doOver1 * 4 + doOver2 * 4 + skipTurn > 256;
       if (
         deepEqual(newClosestSpellInstances, closestSpellInstances) ||
-        computedTable.every((row) => row.current_crisis_level === 4)
+        computedTable.every((row) => row.current_crisis_level === 4) || // has aura
+        ((manipTooLong || doOver1Negative) && !shouldUseNextInstances) // manip too long
       ) {
         // use next closest blackdot
         const blackDotIndex = blackDots.findIndex(
@@ -202,7 +204,6 @@ export function computeManip(
         closestBlackDot = computeClosestBlackDot(currentRNG, blackDots);
       }
     } while (blackDots.length === 0);
-    debugger;
   } while (
     (doOver1 < 0 || doOver2 < 0 || shouldUseNextInstances) &&
     loopCount > 0

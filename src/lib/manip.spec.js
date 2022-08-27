@@ -367,7 +367,67 @@ describe("compute manip", () => {
     ).toEqual({ doOver1: 0, skipTurn: 3, doOver2: 9 });
   });
 
-  it("should compute manip for 100% rng 157 for wall with 520 hp", async () => {
+  it("should compute manip for 100% rng 67 for Arkange with 520 hp", async () => {
+    let category = "100%";
+    let currentCrisis = 3;
+    let currentTable = 4;
+    let rng = 67;
+    let spellOrder = 2;
+    let computedTable = generateComputedTable({
+      currentHp: 520,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 9576,
+      category,
+      deadCharacters: 0,
+      spellTable,
+    });
+    expect(
+      computeManip(
+        currentTable,
+        currentCrisis,
+        rng,
+        category,
+        computedTable,
+        spellOrder,
+        "Arkange (1)"
+      )
+    ).toEqual({ fastDoOver: 3 });
+  });
+
+  it("should compute manip for 100% rng 160 for joobu with 520 hp", async () => {
+    let category = "100%";
+    let currentCrisis = 3;
+    let currentTable = 3;
+    let rng = 160;
+    let spellOrder = 1;
+    let computedTable = generateComputedTable({
+      currentHp: 520,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 9576,
+      category,
+      deadCharacters: 0,
+      spellTable,
+    });
+    expect(
+      computeManip(
+        currentTable,
+        currentCrisis,
+        rng,
+        category,
+        computedTable,
+        spellOrder,
+        "Joobu (1)"
+      )
+    ).toEqual({ doOver1: 1, skipTurn: 9, doOver2: 0 });
+  });
+
+  it("should compute manip for 100% rng 160 for wall with 520 hp", async () => {
     let category = "100%";
     let currentCrisis = 3;
     let currentTable = 3;
@@ -395,6 +455,36 @@ describe("compute manip", () => {
         "Wall (1)"
       )
     ).toEqual({ doOver1: 2, skipTurn: 3, doOver2: 10 });
+  });
+
+  it("should compute manip for 100% rng 157 for wall with 520 hp", async () => {
+    let category = "100%";
+    let currentCrisis = 1;
+    let currentTable = 2;
+    let rng = 105;
+    let spellOrder = 2;
+    let computedTable = generateComputedTable({
+      currentHp: 520,
+      auraChecked: false,
+      blindChecked: false,
+      silenceChecked: false,
+      slowChecked: false,
+      maxHp: 9576,
+      category,
+      deadCharacters: 0,
+      spellTable,
+    });
+    expect(
+      computeManip(
+        currentTable,
+        currentCrisis,
+        rng,
+        category,
+        computedTable,
+        spellOrder,
+        "Joobu (1)"
+      )
+    ).toEqual({ doOver1: 1, skipTurn: 3, doOver2: 1 });
   });
 });
 
