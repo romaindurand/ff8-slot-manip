@@ -42,11 +42,11 @@
 
   {#if category === "100%"}
     <p>
-      Tool for searching Selphie's limit unique spells during Odin's encounter.
-      (only for TheEnd right now)
+      Tool for searching Selphie's limit unique spells during Odin's encounter
+      or BGH251F2 (1st encounter)
     </p>
     <p>
-      Note that only you can influence the battle RNG during this fight which
+      Note that only you can influence the battle RNG during Odin fight which
       means you don't need to launch a long animation in order to execute the
       manip.
     </p>
@@ -55,8 +55,8 @@
       changes the RNG by XX (have to check).
     </p>
     <p>
-      your Max HP must be 9576, and if Aura runs out while you were in the 2nd
-      Do Over part you're fine
+      your Max HP must be 9576 during Odin, and if Aura runs out while you were
+      in the 2nd Do Over part you're fine
     </p>
   {/if}
 
@@ -68,6 +68,13 @@
   {/if}
 
   {#if category === "NoJunction/NoLevel"}
+    <p class="red">Coming Soon TM.</p>
+    <!-- <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
+  <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>
+  <li>The range of HP that works is equal or under 54 hp otherwise you can't get THE END, and the proper hp setup is equal or under 34 hp because it unlocks the spell instant on 2nd do over.</li> -->
+  {/if}
+
+  {#if category === "Custom"}
     <p class="red">Coming Soon TM.</p>
     <!-- <li>Currently Working only on lvl 8, with max Hp at 482, targeted spell is The End.</li>
   <li>During a freeze atb moment like a Guardian Force summon or a long limit break animation like invicible moon.</li>

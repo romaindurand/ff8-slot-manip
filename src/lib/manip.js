@@ -1,8 +1,6 @@
 import deepEqual from "deep-equal";
 import RNGMap from "../data/RNGMap.json";
 import spellTableFR from "../data/table.json";
-import spellTableEN from "../data/tableEN.json";
-import spellTableJP from "../data/tableJP.json";
 
 export default function getManip(
   currentTable,
@@ -376,6 +374,9 @@ function computeCrisisLevel(
   blindChecked,
   silenceChecked,
   slowChecked,
+  poisonChecked,
+  gradualChecked,
+  doomChecked,
   maxHp,
   category,
   deadCharacters
@@ -383,17 +384,32 @@ function computeCrisisLevel(
   const hpMod = Math.floor((2500 * currentHp) / maxHp);
   const deathBonus = deadCharacters * 200 + 1600;
   let statusSum = 0;
-  if (auraChecked && category === "100%") {
+  if (auraChecked && ["100%", "Custom", "NoJunction"].includes(category)) {
     statusSum += 200;
   }
-  if (blindChecked && category === "NoJunction/NoLevel") {
+  if (
+    blindChecked &&
+    ["NoJunction/NoLevel", "NoJunction", "Custom"].includes(category)
+  ) {
     statusSum += 30;
   }
-  if (silenceChecked && category === "NoJunction/NoLevel") {
+  if (
+    silenceChecked &&
+    ["NoJunction/NoLevel", "NoJunction", "Custom"].includes(category)
+  ) {
     statusSum += 30;
   }
-  if (slowChecked && category === "NoJunction/NoLevel") {
+  if (slowChecked && ["NoJunction/NoLevel", "Custom"].includes(category)) {
     statusSum += 15;
+  }
+  if (poisonChecked && category === "Custom") {
+    statusSum += 30;
+  }
+  if (gradualChecked && category === "Custom") {
+    statusSum += 30;
+  }
+  if (doomChecked && category === "Custom") {
+    statusSum += 45;
   }
   const statusBonus = statusSum * 10;
   const limitLevel = Math.floor(
@@ -413,6 +429,9 @@ export function generateComputedTable({
   blindChecked,
   silenceChecked,
   slowChecked,
+  poisonChecked,
+  gradualChecked,
+  doomChecked,
   maxHp,
   category,
   deadCharacters,
@@ -428,6 +447,9 @@ export function generateComputedTable({
         blindChecked,
         silenceChecked,
         slowChecked,
+        poisonChecked,
+        gradualChecked,
+        doomChecked,
         maxHp,
         category,
         deadCharacters
@@ -496,27 +518,6 @@ function isBlackDot(targetTableCrisis, row) {
 function checkBlackDot(row) {
   return (target) =>
     target.table === row.table && target.crisis === row.current_crisis_level;
-}
-
-export function getTranslatedSpell(frenchSpell, targetLang) {
-  const tableIndex = spellTableFR.findIndex((table) =>
-    table.find((row) => row.includes(frenchSpell))
-  );
-  const crisisIndex = spellTableFR[tableIndex].findIndex((row) =>
-    row.includes(frenchSpell)
-  );
-  const entryIndex = spellTableFR[tableIndex][crisisIndex].findIndex((row) =>
-    row.includes(frenchSpell)
-  );
-
-  const currentSpellTable = {
-    FR: spellTableFR,
-    EN: spellTableEN,
-    JP: spellTableJP,
-  }[targetLang];
-
-  const currentSpell = currentSpellTable[tableIndex][crisisIndex][entryIndex];
-  return currentSpell;
 }
 
 export function filterComputedTable(computedTable, selectedSpells) {

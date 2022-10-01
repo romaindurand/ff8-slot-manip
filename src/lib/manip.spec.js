@@ -4,7 +4,6 @@ import {
   computeFastDoOver,
   generateComputedTable,
   computeManip,
-  getTranslatedSpell,
   filterComputedTable,
 } from "./manip";
 import spellTable from "../data/table.json";
@@ -485,15 +484,6 @@ describe("compute manip", () => {
         "Joobu (1)"
       )
     ).toEqual({ doOver1: 1, skipTurn: 3, doOver2: 1 });
-  });
-});
-
-describe("getTranslatedSpell", () => {
-  it("should return the translation for a spell", () => {
-    expect(getTranslatedSpell("Arkange (1)", "FR")).toEqual("Arkange (1)");
-    expect(getTranslatedSpell("Arkange (1)", "JP")).toEqual("レビテガ (1)");
-    expect(getTranslatedSpell("The End (1)", "JP")).toEqual("ジエンド (1)");
-    expect(getTranslatedSpell("Wall (1)", "JP")).toEqual("ウォール (1)");
   });
 });
 
