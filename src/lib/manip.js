@@ -142,14 +142,16 @@ export function computeManip(
     }
 
     // transforms
-    if (skipTurn === 1 || skipTurn === 4) {
-      doOver1 -= 2;
-      skipTurn += 8;
-    }
+    if (deadCharacters !== 2) {
+      if (skipTurn === 1 || skipTurn === 4) {
+        doOver1 -= 2;
+        skipTurn += 8;
+      }
 
-    if (skipTurn === 2) {
-      doOver1 -= 1;
-      skipTurn += 4;
+      if (skipTurn === 2) {
+        doOver1 -= 1;
+        skipTurn += 4;
+      }
     }
 
     // if (doOver1 === 0) doOver2 -=1
