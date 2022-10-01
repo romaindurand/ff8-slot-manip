@@ -227,7 +227,21 @@
     <Faq {category} />
 
     {#if category !== "Any%"}
-      <Collapsible title="Show/hide Status">
+      <Collapsible title="Dead characters">
+        <label class="label" for="deadchars">
+          <span class="label-text">Dead characters</span>
+        </label>
+        <input
+          id="deadchars"
+          min="0"
+          max="2"
+          type="number"
+          placeholder="Dead characters"
+          class="input input-primary input-bordered w-full max-w-xs"
+          bind:value={deadCharacters}
+        />
+      </Collapsible>
+      <Collapsible title="Status">
         {#if ["100%", "NoJunction", "Custom"].includes(category)}
           <label transition:slide class="label cursor-pointer">
             <span class="label-text">Aura status ?</span>
@@ -473,7 +487,7 @@
   </label>
 </div>
 
-<a href="https://github.com/romaindurand/ff8-slot-manip">
+<a href="https://github.com/romaindurand/ff8-slot-manip" target="_blank">
   <img
     loading="lazy"
     width="130"

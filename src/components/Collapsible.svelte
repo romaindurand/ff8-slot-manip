@@ -1,5 +1,5 @@
 <script>
-  export let title = "Show/hide FAQ";
+  export let title = "FAQ";
 </script>
 
 <div
