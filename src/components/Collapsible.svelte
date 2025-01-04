@@ -1,5 +1,12 @@
 <script>
-  export let title = "FAQ";
+  /**
+   * @typedef {Object} Props
+   * @property {string} [title]
+   * @property {import('svelte').Snippet} [children]
+   */
+
+  /** @type {Props} */
+  let { title = "FAQ", children } = $props();
 </script>
 
 <div
@@ -8,7 +15,7 @@
   <input type="checkbox" />
   <div class="collapse-title text-lg font-small">{title}</div>
   <div class="collapse-content">
-    <slot />
+    {@render children?.()}
   </div>
 </div>
 

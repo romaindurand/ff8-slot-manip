@@ -1,6 +1,6 @@
 <script>
   import Collapsible from "./Collapsible.svelte";
-  export let category;
+  let { category } = $props();
 </script>
 
 <!-- add collapsable secion -->
@@ -15,7 +15,7 @@
       frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
-    />
+></iframe>
     <p>
       Currently Working only on lvl 8, with max Hp at 482, targeted spell is The
       End.

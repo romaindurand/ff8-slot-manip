@@ -3,7 +3,7 @@
   import clickOutside from "../lib/clickOutside.js";
   import { getSpells } from "../lib/i18n";
 
-  export let currentLevel;
+  let { currentLevel } = $props();
 
   const dispatch = createEventDispatcher();
 
@@ -19,7 +19,7 @@
     isOpen = !isOpen;
   }
 
-  let isOpen = false;
+  let isOpen = $state(false);
 
   const langs = [
     {
@@ -43,7 +43,7 @@
 <div
   class="ToggleLang dropdown dropdown-end"
   class:dropdown-open={isOpen}
-  on:click={toggleOpen}
+  onclick={toggleOpen}
   use:clickOutside={() => (isOpen = false)}
 >
   <span tabindex="0" class="btn btn-xs m-1">Spells language</span>
@@ -55,7 +55,7 @@
       <li class="menu-item">
         <button
           class="hover:bg-neutral-focus neutral-content"
-          on:click={() => toggleLang(lang.value)}
+          onclick={() => toggleLang(lang.value)}
         >
           {lang.name}
         </button>

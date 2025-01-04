@@ -1,8 +1,6 @@
-<script context="module">
-  export const prerender = true;
-</script>
-
 <script>
+  import { run } from "svelte/legacy";
+
   import { slide, fly } from "svelte/transition";
   import AutoComplete from "simple-svelte-autocomplete";
   import ToggleLang from "../components/ToggleLang.svelte";
@@ -19,24 +17,27 @@
 
   console.log(
     "%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand",
-    "font-size: 1.5em; font-weight: bold; color: #ff0000;"
+    "font-size: 1.5em; font-weight: bold; color: #ff0000;",
   );
 
   let levels = ["8 or 9", "100"];
-  let currentLevel = levels[0];
-  $: {
+  let currentLevel = $state(levels[0]);
+  run(() => {
     if (currentLevel === "8 or 9") {
       spellTable = spellTableFR;
     } else {
       spellTable = spellTable100;
     }
-  }
+  });
 
-  let selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4;
-  let currentEnemy = "Odin";
+  let selectedSpell1 = $state(),
+    selectedSpell2 = $state(),
+    selectedSpell3 = $state(),
+    selectedSpell4 = $state();
+  let currentEnemy = $state("Odin");
   const enemies = ["Odin", "BGH251F2"];
 
-  $: {
+  run(() => {
     if (currentEnemy === "BGH251F2") {
       maxHp = 482;
       currentHp = 60;
@@ -44,23 +45,23 @@
       maxHp = 9576;
       currentHp = 520;
     }
-  }
+  });
 
-  let deadCharacters = 0;
-  let currentHp = 34;
-  let showRawData = false;
-  let auraChecked = false;
-  let blindChecked = false;
-  let silenceChecked = false;
-  let slowChecked = false;
-  let poisonChecked = false;
-  let gradualChecked = false;
-  let doomChecked = false;
-  let showManipCheckbox;
-  let category;
-  let maxHp;
-  let lang = "FR";
-  let spellTable = getSpells(lang);
+  let deadCharacters = $state(0);
+  let currentHp = $state(34);
+  let showRawData = $state(false);
+  let auraChecked = $state(false);
+  let blindChecked = $state(false);
+  let silenceChecked = $state(false);
+  let slowChecked = $state(false);
+  let poisonChecked = $state(false);
+  let gradualChecked = $state(false);
+  let doomChecked = $state(false);
+  let showManipCheckbox = $state();
+  let category = $state();
+  let maxHp = $state();
+  let lang = $state("FR");
+  let spellTable = $state(getSpells(lang));
 
   const targetableSpells100percent = [
     "The End (1)",
@@ -82,30 +83,32 @@
     "Aphasie (3)",
   ];
 
-  $: targetableSpells = (
-    {
-      "100%": targetableSpells100percent,
-      "NoJunction/NoLevel": targetablesSpellsNoJNoL,
-      Custom: targetableSpells100percent,
-    }[category] || []
-  ).map((spell) => {
-    return {
-      translatedSpell: getTranslatedSpell(spell, lang),
-      spell,
-    };
-  });
+  let targetableSpells = $derived(
+    (
+      {
+        "100%": targetableSpells100percent,
+        "NoJunction/NoLevel": targetablesSpellsNoJNoL,
+        Custom: targetableSpells100percent,
+      }[category] || []
+    ).map((spell) => {
+      return {
+        translatedSpell: getTranslatedSpell(spell, lang),
+        spell,
+      };
+    }),
+  );
   const defaultTargetedSpell = {
     translatedSpell: "The End (1)",
     spell: "The End (1)",
   };
-  let targetedSpell = defaultTargetedSpell;
+  let targetedSpell = $state(defaultTargetedSpell);
 
-  $: {
+  run(() => {
     if (category === "Any%" || category === "NoJunction")
       targetedSpell = defaultTargetedSpell;
-  }
+  });
 
-  $: {
+  run(() => {
     maxHp = {
       "Any%": 482,
       "100%": 9576,
@@ -114,45 +117,59 @@
       Custom: 9999,
     }[category];
     // currentHp = currentHp;
-  }
+  });
 
-  $: {
+  run(() => {
     if (category === "100%") currentHp = 520;
     if (category === "Any%") currentHp = 34;
     if (category === "NoJunction/NoLevel" || category === "NoJunction")
       currentHp = 1;
     if (category === "Custom") currentHp = 482;
-  }
-
-  let manip;
-
-  $: computedTable = generateComputedTable({
-    currentHp,
-    auraChecked,
-    blindChecked,
-    silenceChecked,
-    slowChecked,
-    poisonChecked,
-    gradualChecked,
-    doomChecked,
-    maxHp,
-    category,
-    deadCharacters,
-    spellTable,
   });
-  $: console.table(computedTable);
 
-  $: filteredComputedTable = filterComputedTable(computedTable, [
-    selectedSpell1,
-    selectedSpell2,
-    selectedSpell3,
-    selectedSpell4,
-  ]);
+  let manip = $state();
 
-  $: autocompleteSpells1 = generateAutoCompleteSpells(filteredComputedTable, 1);
-  $: autocompleteSpells2 = generateAutoCompleteSpells(filteredComputedTable, 2);
-  $: autocompleteSpells3 = generateAutoCompleteSpells(filteredComputedTable, 3);
-  $: autocompleteSpells4 = generateAutoCompleteSpells(filteredComputedTable, 4);
+  let computedTable = $derived(
+    generateComputedTable({
+      currentHp,
+      auraChecked,
+      blindChecked,
+      silenceChecked,
+      slowChecked,
+      poisonChecked,
+      gradualChecked,
+      doomChecked,
+      maxHp,
+      category,
+      deadCharacters,
+      spellTable,
+    }),
+  );
+  run(() => {
+    console.table(computedTable);
+  });
+
+  let filteredComputedTable = $derived(
+    filterComputedTable(computedTable, [
+      selectedSpell1,
+      selectedSpell2,
+      selectedSpell3,
+      selectedSpell4,
+    ]),
+  );
+
+  let autocompleteSpells1 = $derived(
+    generateAutoCompleteSpells(filteredComputedTable, 1),
+  );
+  let autocompleteSpells2 = $derived(
+    generateAutoCompleteSpells(filteredComputedTable, 2),
+  );
+  let autocompleteSpells3 = $derived(
+    generateAutoCompleteSpells(filteredComputedTable, 3),
+  );
+  let autocompleteSpells4 = $derived(
+    generateAutoCompleteSpells(filteredComputedTable, 4),
+  );
 
   function resetSpells() {
     selectedSpell1 = "";
@@ -173,14 +190,13 @@
     }
   }
 
-  $: spellList = [
-    selectedSpell1,
-    selectedSpell2,
-    selectedSpell3,
-    selectedSpell4,
-  ].filter((spell) => spell);
-  $: spellOrder = spellList.length;
-  $: {
+  let spellList = $derived(
+    [selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4].filter(
+      (spell) => spell,
+    ),
+  );
+  let spellOrder = $derived(spellList.length);
+  run(() => {
     if (filteredComputedTable.length === 1) {
       const currentTable = filteredComputedTable[0].table;
       const currentCrisis = filteredComputedTable[0].current_crisis_level;
@@ -192,13 +208,13 @@
         category,
         computedTable,
         spellOrder,
-        targetedSpell.spell
+        targetedSpell.spell,
       );
       showManipCheckbox.checked = true;
     } else {
       manip = null;
     }
-  }
+  });
 
   function switchLang(event) {
     spellTable = event.detail.spellTable;
@@ -243,7 +259,7 @@
       </Collapsible>
       <Collapsible title="Status">
         {#if ["100%", "NoJunction", "Custom"].includes(category)}
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Aura status ?</span>
             <input
               type="checkbox"
@@ -254,7 +270,7 @@
         {/if}
 
         {#if ["NoJunction", "NoJunction/NoLevel", "Custom"].includes(category)}
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Blind status ?</span>
             <input
               type="checkbox"
@@ -265,7 +281,7 @@
         {/if}
 
         {#if ["NoJunction", "NoJunction/NoLevel", "Custom"].includes(category)}
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Silence status ?</span>
             <input
               type="checkbox"
@@ -276,7 +292,7 @@
         {/if}
 
         {#if ["NoJunction/NoLevel", "Custom"].includes(category)}
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Slow status ?</span>
             <input
               type="checkbox"
@@ -287,7 +303,7 @@
         {/if}
 
         {#if category === "Custom"}
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Poison status ?</span>
             <input
               type="checkbox"
@@ -296,7 +312,7 @@
             />
           </label>
 
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Gradual petrify status ?</span>
             <input
               type="checkbox"
@@ -305,7 +321,7 @@
             />
           </label>
 
-          <label transition:slide class="label cursor-pointer">
+          <label transition:slide|global class="label cursor-pointer">
             <span class="label-text">Doom status ?</span>
             <input
               type="checkbox"
@@ -388,7 +404,7 @@
       {#if selectedSpell1 && !selectedSpell2 && !selectedSpell3 && !selectedSpell4}
         <button
           class="btn btn-outline btn-error reset-button"
-          on:click={() => resetSpell(1)}>✕</button
+          onclick={() => resetSpell(1)}>✕</button
         >
       {/if}
       {#if selectedSpell1}
@@ -402,7 +418,7 @@
       {#if selectedSpell2 && !selectedSpell3 && !selectedSpell4}
         <button
           class="btn btn-outline btn-error reset-button"
-          on:click={() => resetSpell(2)}>✕</button
+          onclick={() => resetSpell(2)}>✕</button
         >
       {/if}
       {#if selectedSpell2}
@@ -416,7 +432,7 @@
       {#if selectedSpell3 && !selectedSpell4}
         <button
           class="btn btn-outline btn-error reset-button"
-          on:click={() => resetSpell(3)}>✕</button
+          onclick={() => resetSpell(3)}>✕</button
         >
       {/if}
       {#if selectedSpell3}
@@ -430,15 +446,15 @@
       {#if selectedSpell4}
         <button
           class="btn btn-outline btn-error reset-button"
-          on:click={() => resetSpell(4)}>✕</button
+          onclick={() => resetSpell(4)}>✕</button
         >
       {/if}
     </div>
     {#if spellOrder}
       <button
         class="btn btn-error"
-        on:click={resetSpells}
-        transition:fly={{ x: -200, duration: 300 }}
+        onclick={resetSpells}
+        transition:fly|global={{ x: -200, duration: 300 }}
       >
         reset spells
       </button>
@@ -447,9 +463,9 @@
 
   {#if filteredComputedTable.length > 0}
     <button
-      transition:fly={{ x: -200, duration: 300 }}
+      transition:fly|global={{ x: -200, duration: 300 }}
       class="btn btn-info btn-small"
-      on:click={() => {
+      onclick={() => {
         showRawData = !showRawData;
       }}
     >
@@ -458,10 +474,10 @@
   {/if}
 
   {#if showRawData && filteredComputedTable.length > 0}
-    <pre class="raw-data max-w-sm" transition:slide>{JSON.stringify(
+    <pre class="raw-data max-w-sm" transition:slide|global>{JSON.stringify(
         filteredComputedTable,
         null,
-        2
+        2,
       )}</pre>
   {/if}
 
@@ -522,7 +538,10 @@
     padding-left: 0;
     padding-right: 0;
   }
-  :global(input.input.input-primary.autocomplete-input, input.input.input-secondary.autocomplete-input) {
+  :global(
+      input.input.input-primary.autocomplete-input,
+      input.input.input-secondary.autocomplete-input
+    ) {
     height: 2.5rem;
   }
 
