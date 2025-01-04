@@ -1,5 +1,6 @@
 <script>
   import { run } from "svelte/legacy";
+  import "../app.css";
 
   import { slide, fly } from "svelte/transition";
   import AutoComplete from "simple-svelte-autocomplete";
@@ -17,8 +18,24 @@
 
   console.log(
     "%cSubmit your questions to Kaivel, on Github, or on Twitter @romaindurand",
-    "font-size: 1.5em; font-weight: bold; color: #ff0000;",
+    "font-size: 1.5em; font-weight: bold; color: #ff0000;"
   );
+
+  let deadCharacters = $state(0);
+  let currentHp = $state(34);
+  let showRawData = $state(false);
+  let auraChecked = $state(false);
+  let blindChecked = $state(false);
+  let silenceChecked = $state(false);
+  let slowChecked = $state(false);
+  let poisonChecked = $state(false);
+  let gradualChecked = $state(false);
+  let doomChecked = $state(false);
+  let showManipCheckbox = $state();
+  let category = $state();
+  let maxHp = $state();
+  let lang = $state("FR");
+  let spellTable = $state(getSpells(lang));
 
   let levels = ["8 or 9", "100"];
   let currentLevel = $state(levels[0]);
@@ -46,22 +63,6 @@
       currentHp = 520;
     }
   });
-
-  let deadCharacters = $state(0);
-  let currentHp = $state(34);
-  let showRawData = $state(false);
-  let auraChecked = $state(false);
-  let blindChecked = $state(false);
-  let silenceChecked = $state(false);
-  let slowChecked = $state(false);
-  let poisonChecked = $state(false);
-  let gradualChecked = $state(false);
-  let doomChecked = $state(false);
-  let showManipCheckbox = $state();
-  let category = $state();
-  let maxHp = $state();
-  let lang = $state("FR");
-  let spellTable = $state(getSpells(lang));
 
   const targetableSpells100percent = [
     "The End (1)",
@@ -95,7 +96,7 @@
         translatedSpell: getTranslatedSpell(spell, lang),
         spell,
       };
-    }),
+    })
   );
   const defaultTargetedSpell = {
     translatedSpell: "The End (1)",
@@ -143,7 +144,7 @@
       category,
       deadCharacters,
       spellTable,
-    }),
+    })
   );
   run(() => {
     console.table(computedTable);
@@ -155,20 +156,20 @@
       selectedSpell2,
       selectedSpell3,
       selectedSpell4,
-    ]),
+    ])
   );
 
   let autocompleteSpells1 = $derived(
-    generateAutoCompleteSpells(filteredComputedTable, 1),
+    generateAutoCompleteSpells(filteredComputedTable, 1)
   );
   let autocompleteSpells2 = $derived(
-    generateAutoCompleteSpells(filteredComputedTable, 2),
+    generateAutoCompleteSpells(filteredComputedTable, 2)
   );
   let autocompleteSpells3 = $derived(
-    generateAutoCompleteSpells(filteredComputedTable, 3),
+    generateAutoCompleteSpells(filteredComputedTable, 3)
   );
   let autocompleteSpells4 = $derived(
-    generateAutoCompleteSpells(filteredComputedTable, 4),
+    generateAutoCompleteSpells(filteredComputedTable, 4)
   );
 
   function resetSpells() {
@@ -192,8 +193,8 @@
 
   let spellList = $derived(
     [selectedSpell1, selectedSpell2, selectedSpell3, selectedSpell4].filter(
-      (spell) => spell,
-    ),
+      (spell) => spell
+    )
   );
   let spellOrder = $derived(spellList.length);
   run(() => {
@@ -208,7 +209,7 @@
         category,
         computedTable,
         spellOrder,
-        targetedSpell.spell,
+        targetedSpell.spell
       );
       showManipCheckbox.checked = true;
     } else {
@@ -477,7 +478,7 @@
     <pre class="raw-data max-w-sm" transition:slide|global>{JSON.stringify(
         filteredComputedTable,
         null,
-        2,
+        2
       )}</pre>
   {/if}
 
