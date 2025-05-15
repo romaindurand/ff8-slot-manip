@@ -82,7 +82,6 @@
     "Cécité (3)",
     "Aphasie (2)",
     "Aphasie (3)",
-    "Ultima (1)",
     "Ultima (2)",
   ];
 
